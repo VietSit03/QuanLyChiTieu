@@ -1,20 +1,29 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import DrawerNavigator from "./src/navigator/DrawerNavigator";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
+  useEffect(() => {
+    const fetchColor = async () => {
+      try {
+        const storedColor = await AsyncStorage.getItem("PRIMARY_COLOR");
+        // if (!storedColor) {
+          await AsyncStorage.setItem("PRIMARY_COLOR", "#20B2AA");
+          await AsyncStorage.setItem("HEADER_BG_COLOR", "#008080");
+          await AsyncStorage.setItem("TEXT_COLOR", "#FFF");
+        // }
+      } catch (error) {
+        console.log("Error fetching color:", error);
+      }
+    };
+
+    fetchColor();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <DrawerNavigator />
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
