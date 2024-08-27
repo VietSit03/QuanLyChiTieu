@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
+import { StyleSheet, ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -24,7 +24,7 @@ const Category = () => {
   return (
     <>
       {loadingPage ? (
-        <ActivityIndicator size={20} color={primaryColor}></ActivityIndicator>
+        <ActivityIndicator size={"large"} />
       ) : (
         <Tab.Navigator
           screenOptions={{

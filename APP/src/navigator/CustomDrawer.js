@@ -13,8 +13,8 @@ function CustomDrawer(props) {
 
   useEffect(() => {
     async function fetchColor() {
-      setBgColor(await AsyncStorage.getItem("PRIMARY_COLOR"));
-      setHeaderBgColor(await AsyncStorage.getItem("HEADER_BG_COLOR"));
+      setBgColor(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHT"));
+      setHeaderBgColor(await AsyncStorage.getItem("PRIMARY_COLOR_DARK"));
       setTextColor(await AsyncStorage.getItem("TEXT_COLOR"));
     }
 

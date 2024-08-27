@@ -7,10 +7,11 @@ export default function App() {
   useEffect(() => {
     const fetchColor = async () => {
       try {
-        const storedColor = await AsyncStorage.getItem("PRIMARY_COLOR");
         // if (!storedColor) {
-          await AsyncStorage.setItem("PRIMARY_COLOR", "#20B2AA");
-          await AsyncStorage.setItem("HEADER_BG_COLOR", "#008080");
+          await AsyncStorage.setItem("PRIMARY_COLOR_LIGHT", "#20B2AA");
+          console.log(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHT"));
+          await AsyncStorage.setItem("PRIMARY_COLOR_LIGHTER", "#66CDAA");
+          await AsyncStorage.setItem("PRIMARY_COLOR_DARK", "#008080");
           await AsyncStorage.setItem("TEXT_COLOR", "#FFF");
         // }
       } catch (error) {
