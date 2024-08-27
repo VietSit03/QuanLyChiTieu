@@ -1,5 +1,5 @@
 import { createStackNavigator } from "@react-navigation/stack";
-import Home from "../screens/Home";
+import Home from "../screens/Home/Home";
 import Schedule from "../screens/Schedule";
 import Category from "../screens/Category/Category";
 import Setting from "../screens/Setting";
@@ -8,7 +8,6 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { DrawerActions } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { View } from "react-native";
 import IconCategory from "../screens/Category/IconCategory";
 
 const Stack = createStackNavigator();
@@ -18,7 +17,7 @@ function StackNavigator({ navigation }) {
 
   useEffect(() => {
     async function fetchPrimaryColor() {
-      setPrimaryColor(await AsyncStorage.getItem("PRIMARY_COLOR"));
+      setPrimaryColor(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHT"));
     }
 
     fetchPrimaryColor();
@@ -51,16 +50,33 @@ function StackNavigator({ navigation }) {
     },
   });
 
-  const drawer = () => ({
+  const drawer = (title) => ({
     headerLeft: () => <DrawerNavigator />,
+    title: title,
   });
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen name="Home" component={Home} options={drawer} />
-      <Stack.Screen name="Schedule" component={Schedule} options={drawer} />
-      <Stack.Screen name="Category" component={Category} options={drawer} />
-      <Stack.Screen name="Setting" component={Setting} options={drawer} />
+      <Stack.Screen
+        name="Home"
+        component={Home}
+        options={drawer("Trang chủ")}
+      />
+      <Stack.Screen
+        name="Schedule"
+        component={Schedule}
+        options={drawer("Thanh toàn theo lịch")}
+      />
+      <Stack.Screen
+        name="Category"
+        component={Category}
+        options={drawer("Danh mục")}
+      />
+      <Stack.Screen
+        name="Setting"
+        component={Setting}
+        options={drawer("Cài đặt")}
+      />
       <Stack.Screen
         name="AddCategory"
         component={AddCategory}

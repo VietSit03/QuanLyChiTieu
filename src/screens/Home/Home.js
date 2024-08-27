@@ -1,12 +1,12 @@
-import { StyleSheet, ActivityIndicator } from "react-native";
+import { ActivityIndicator, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import CategorySreen from "./CategorySreen";
+import HomeScreen from "./HomeScreen";
 
 const Tab = createMaterialTopTabNavigator();
 
-const Category = () => {
+const Home = () => {
   const [loadingPage, setLoadingPage] = useState(true);
   const [primaryColor, setPrimaryColor] = useState();
   const [headerBgColor, setHeaderBgColor] = useState();
@@ -45,13 +45,18 @@ const Category = () => {
           }}
         >
           <Tab.Screen
+            name="TỔNG"
+            component={HomeScreen}
+            initialParams={{ type: "TONG" }}
+          />
+          <Tab.Screen
             name="CHI PHÍ"
-            component={CategorySreen}
+            component={HomeScreen}
             initialParams={{ type: "CHI" }}
           />
           <Tab.Screen
             name="THU NHẬP"
-            component={CategorySreen}
+            component={HomeScreen}
             initialParams={{ type: "THU" }}
           />
         </Tab.Navigator>
@@ -60,7 +65,7 @@ const Category = () => {
   );
 };
 
-export default Category;
+export default Home;
 
 const styles = StyleSheet.create({
   container: {

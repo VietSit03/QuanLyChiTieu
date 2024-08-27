@@ -1,5 +1,6 @@
 import {
   FlatList,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -29,12 +30,21 @@ const CategoryScreen = ({ route, navigation }) => {
       result.push([specialCategory]);
     }
 
+    // Add empty placeholders to the last row if needed
+    const lastRow = result[result.length - 1];
+    while (lastRow.length < chunkSize) {
+      lastRow.push({ id: `empty-${lastRow.length}`, empty: true });
+    }
+
     return result;
   };
 
   const rows = chunkArray(data, 3);
 
   const Category = ({ item }) => {
+    if (item.empty) {
+      return <View style={{ width: 70, height: 60 }} />;
+    }
     return (
       <>
         {item.isSpecial ? (
@@ -71,7 +81,12 @@ const CategoryScreen = ({ route, navigation }) => {
                 justifyContent: "center",
                 alignItems: "center",
               }}
-            ></TouchableOpacity>
+            >
+              <Image
+                source={{ uri: "https://imgur.com/b0SG0aW.png" }}
+                style={{ width: 40, height: 40 }}
+              />
+            </TouchableOpacity>
             <Text
               numberOfLines={2}
               ellipsizeMode="tail"
@@ -107,7 +122,7 @@ const CategoryScreen = ({ route, navigation }) => {
         data={rows}
         keyExtractor={(item, index) => index.toString()}
         renderItem={renderRow}
-        scrollEnabled={true} // Enable scrolling if needed
+        scrollEnabled={true}
       />
     </View>
   );
