@@ -259,19 +259,7 @@ const AddCategory = ({ navigation }) => {
             }}
           >
             <TouchableOpacity
-              style={{
-                backgroundColor: "#FFC125",
-                justifyContent: "center",
-                alignItems: "center",
-                height: 50,
-                width: "70%",
-                borderRadius: 25,
-                elevation: 4,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 4,
-              }}
+              style={styles.btnAdd}
               onPress={() => handleAddCategory()}
             >
               <Text style={{ fontSize: 16 }}>Thêm</Text>
@@ -308,4 +296,17 @@ const styles = StyleSheet.create({
     color: "gray",
   },
   sectionBody: { marginTop: 20 },
+  btnAdd: {
+    backgroundColor: "#FFC125",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    width: "70%",
+    borderRadius: 25,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
 });

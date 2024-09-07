@@ -1,6 +1,6 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import Home from "../screens/Home/Home";
-import Schedule from "../screens/Schedule";
+import Schedule from "../screens/Schedule/Schedule";
 import Category from "../screens/Category/Category";
 import Setting from "../screens/Setting";
 import AddCategory from "../screens/Category/AddCategory";
@@ -9,6 +9,9 @@ import { DrawerActions } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import IconCategory from "../screens/Category/IconCategory";
+import AddSchedule from "../screens/Schedule/AddSchedule";
+import AddScheduleScreen from "../screens/Schedule/AddScheduleScreen";
+import CategoryScreen from "../screens/Category/CategoryScreen";
 
 const Stack = createStackNavigator();
 
@@ -30,7 +33,7 @@ function StackNavigator({ navigation }) {
         size={26}
         color="white"
         onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-        style={{ marginLeft: 10 }}
+        style={{ marginLeft: 15 }}
       />
     );
   }
@@ -65,7 +68,7 @@ function StackNavigator({ navigation }) {
       <Stack.Screen
         name="Schedule"
         component={Schedule}
-        options={drawer("Thanh toàn theo lịch")}
+        options={drawer("Thanh toán theo lịch")}
       />
       <Stack.Screen
         name="Category"
@@ -86,6 +89,16 @@ function StackNavigator({ navigation }) {
         name="IconCategory"
         component={IconCategory}
         options={{ title: "Biểu tượng danh mục" }}
+      />
+      <Stack.Screen
+        name="AddSchedule"
+        component={AddSchedule}
+        options={{ title: "Tạo lịch thanh toán" }}
+      />
+      <Stack.Screen
+        name="CategoryScreen"
+        component={CategoryScreen}
+        options={{ title: "Danh mục" }}
       />
     </Stack.Navigator>
   );

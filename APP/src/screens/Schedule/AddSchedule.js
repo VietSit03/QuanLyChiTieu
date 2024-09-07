@@ -1,13 +1,12 @@
-import { StyleSheet, ActivityIndicator } from "react-native";
+import { ActivityIndicator, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import CategorySreen from "./CategoryScreen";
-import CategoryScreen from "./CategoryScreen";
+import AddScheduleScreen from "./AddScheduleScreen";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 
 const Tab = createMaterialTopTabNavigator();
 
-const Category = () => {
+const AddSchedule = ({ navigation }) => {
   const [loadingPage, setLoadingPage] = useState(true);
   const [primaryColor, setPrimaryColor] = useState();
   const [headerBgColor, setHeaderBgColor] = useState();
@@ -47,12 +46,12 @@ const Category = () => {
         >
           <Tab.Screen
             name="CHI PHÍ"
-            component={CategoryScreen}
+            component={AddScheduleScreen}
             initialParams={{ type: "CHI" }}
           />
           <Tab.Screen
             name="THU NHẬP"
-            component={CategoryScreen}
+            component={AddScheduleScreen}
             initialParams={{ type: "THU" }}
           />
         </Tab.Navigator>
@@ -61,6 +60,6 @@ const Category = () => {
   );
 };
 
-export default Category;
+export default AddSchedule;
 
 const styles = StyleSheet.create({});
