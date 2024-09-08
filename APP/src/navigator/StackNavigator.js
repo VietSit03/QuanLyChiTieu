@@ -2,29 +2,23 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Home from "../screens/Home/Home";
 import Schedule from "../screens/Schedule/Schedule";
 import Category from "../screens/Category/Category";
-import Setting from "../screens/Setting";
+import Setting from "../screens/SettingScreen/Setting";
 import AddCategory from "../screens/Category/AddCategory";
 import Entypo from "@expo/vector-icons/Entypo";
-import { DrawerActions } from "@react-navigation/native";
-import { useEffect, useState } from "react";
+import { DrawerActions, useFocusEffect } from "@react-navigation/native";
+import { useCallback, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import IconCategory from "../screens/Category/IconCategory";
 import AddSchedule from "../screens/Schedule/AddSchedule";
-import AddScheduleScreen from "../screens/Schedule/AddScheduleScreen";
 import CategoryScreen from "../screens/Category/CategoryScreen";
+import Theme from "../screens/SettingScreen/Theme";
+import Currency from "../screens/SettingScreen/Currency";
+import { ThemeContext } from "../../App";
 
 const Stack = createStackNavigator();
 
 function StackNavigator({ navigation }) {
-  const [primaryColor, setPrimaryColor] = useState();
-
-  useEffect(() => {
-    async function fetchPrimaryColor() {
-      setPrimaryColor(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHT"));
-    }
-
-    fetchPrimaryColor();
-  }, []);
+  const { themeColors } = useContext(ThemeContext);
 
   function DrawerNavigator() {
     return (
@@ -40,7 +34,7 @@ function StackNavigator({ navigation }) {
 
   const screenOptions = () => ({
     headerStyle: {
-      backgroundColor: primaryColor,
+      backgroundColor: themeColors.primaryColorLight,
       elevation: 4,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
@@ -99,6 +93,16 @@ function StackNavigator({ navigation }) {
         name="CategoryScreen"
         component={CategoryScreen}
         options={{ title: "Danh mục" }}
+      />
+      <Stack.Screen
+        name="Theme"
+        component={Theme}
+        options={{ title: "Màu sắc" }}
+      />
+      <Stack.Screen
+        name="Currency"
+        component={Currency}
+        options={{ title: "Tiền tệ" }}
       />
     </Stack.Navigator>
   );

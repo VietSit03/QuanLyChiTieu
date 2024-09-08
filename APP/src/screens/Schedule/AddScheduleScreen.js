@@ -8,11 +8,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TextInput } from "react-native-paper";
 import { Dropdown } from "react-native-element-dropdown";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { ThemeContext } from "../../../App";
 
 const frequency = [
   { id: "MOTLAN", name: "Một lần" },
@@ -24,10 +25,8 @@ const frequency = [
 
 const AddScheduleScreen = ({ route, navigation }) => {
   const { type } = route.params;
+  const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [primaryColorLighter, setPrimaryColorLighter] = useState();
-  const [primaryColorLight, setPrimaryColorLight] = useState();
-  const [primaryColorDark, setPrimaryColorDark] = useState();
   const [currency, setCurrency] = useState("VND");
   const [value, setValue] = React.useState(null);
 
@@ -40,11 +39,6 @@ const AddScheduleScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     async function fetchPrimaryColor() {
-      setPrimaryColorLight(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHT"));
-      setPrimaryColorLighter(
-        await AsyncStorage.getItem("PRIMARY_COLOR_LIGHTER")
-      );
-      setPrimaryColorDark(await AsyncStorage.getItem("PRIMARY_COLOR_DARK"));
     }
 
     fetchPrimaryColor();
@@ -103,7 +97,7 @@ const AddScheduleScreen = ({ route, navigation }) => {
               <TextInput
                 label="Tên phương thức thanh toán"
                 mode="outlined"
-                activeOutlineColor={primaryColorDark}
+                activeOutlineColor={themeColors.primaryColorDark}
               />
             </View>
             <View style={styles.row}>
@@ -117,9 +111,9 @@ const AddScheduleScreen = ({ route, navigation }) => {
                 onChange={(item) => {
                   setValue(item.id);
                 }}
-                activeColor={primaryColorLighter}
-                placeholderStyle={{ color: primaryColorLight, fontSize: 16 }}
-                selectedTextStyle={{ color: primaryColorLight, fontSize: 16 }}
+                activeColor={themeColors.primaryColorLighter}
+                placeholderStyle={{ color: themeColors.primaryColorLight, fontSize: 16 }}
+                selectedTextStyle={{ color: themeColors.primaryColorLight, fontSize: 16 }}
                 renderRightIcon={() => null}
                 style={{ marginTop: 5 }}
                 containerStyle={{ maxWidth: 200 }}
@@ -138,7 +132,7 @@ const AddScheduleScreen = ({ route, navigation }) => {
                 <Text
                   style={{
                     marginRight: 5,
-                    color: primaryColorLight,
+                    color: themeColors.primaryColorLight,
                     fontSize: 16,
                   }}
                 >
@@ -186,7 +180,7 @@ const AddScheduleScreen = ({ route, navigation }) => {
                 <Text
                   style={{
                     marginRight: 5,
-                    color: primaryColorLight,
+                    color: themeColors.primaryColorLight,
                     fontSize: 16,
                   }}
                 >
@@ -240,7 +234,7 @@ const AddScheduleScreen = ({ route, navigation }) => {
                 <Text
                   style={{
                     marginRight: 5,
-                    color: primaryColorLight,
+                    color: themeColors.primaryColorLight,
                     fontSize: 16,
                   }}
                 >
@@ -291,7 +285,7 @@ const AddScheduleScreen = ({ route, navigation }) => {
                   style={{
                     marginTop: 5,
                     marginRight: 5,
-                    color: primaryColorLight,
+                    color: themeColors.primaryColorLight,
                     fontSize: 16,
                   }}
                 >
@@ -304,14 +298,14 @@ const AddScheduleScreen = ({ route, navigation }) => {
                 label={"Số tiền (" + currency + ")"}
                 mode="outlined"
                 inputMode="numeric"
-                activeOutlineColor={primaryColorDark}
+                activeOutlineColor={themeColors.primaryColorDark}
               />
             </View>
             <View style={styles.row}>
               <TextInput
                 label="Ghi chú"
                 mode="outlined"
-                activeOutlineColor={primaryColorDark}
+                activeOutlineColor={themeColors.primaryColorDark}
               />
             </View>
             <View

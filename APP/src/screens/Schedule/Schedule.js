@@ -7,13 +7,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SwipeListView } from "react-native-swipe-list-view";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import { Switch } from "react-native-paper";
 import AddSchedule from "./AddSchedule";
+import { ThemeContext } from "../../../App";
 
 const ScheduleSwitch = React.memo(
   ({ item, toggleSwitch, color }) => {
@@ -30,9 +31,8 @@ const ScheduleSwitch = React.memo(
 );
 
 const Schedule = ({ navigation }) => {
+  const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [primaryColor, setPrimaryColor] = useState();
-  const [primaryColorDark, setPrimaryColorDark] = useState();
 
   const [data, setData] = useState([
     { key: "1", text: "Nhận tiền lương", isEnabled: false },
@@ -51,10 +51,7 @@ const Schedule = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    async function fetchPrimaryColor() {
-      setPrimaryColor(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHT"));
-      setPrimaryColorDark(await AsyncStorage.getItem("PRIMARY_COLOR_DARK"));
-    }
+    async function fetchPrimaryColor() {}
 
     fetchPrimaryColor();
     setLoadingPage(false);
@@ -70,7 +67,7 @@ const Schedule = ({ navigation }) => {
         <ScheduleSwitch
           item={item}
           toggleSwitch={toggleSwitch}
-          color={primaryColorDark}
+          color={themeColors.primaryColorDark}
         />
       </Pressable>
     );
@@ -99,10 +96,7 @@ const Schedule = ({ navigation }) => {
           setLoadingPage(true);
           setTimeout(() => {
             setLoadingPage(false);
-            Alert.alert(
-              "Xoá thành công",
-              "Lịch thanh toán đã được xoá."
-            );
+            Alert.alert("Xoá thành công", "Lịch thanh toán đã được xoá.");
           }, 2000);
         },
         style: "destructive",
@@ -113,14 +107,18 @@ const Schedule = ({ navigation }) => {
   return (
     <>
       {loadingPage ? (
-        <ActivityIndicator size={"large"} style={{marginTop: 10}} />
+        <ActivityIndicator size={"large"} style={{ marginTop: 10 }} />
       ) : (
         <View style={styles.container}>
           <TouchableOpacity
             style={{ flexDirection: "row", alignItems: "center" }}
             onPress={() => navigation.navigate(AddSchedule)}
           >
-            <Ionicons name="add-circle" size={24} color={primaryColor} />
+            <Ionicons
+              name="add-circle"
+              size={24}
+              color={themeColors.primaryColorLight}
+            />
             <Text style={{ fontSize: 16, marginLeft: 10 }}>TẠO</Text>
           </TouchableOpacity>
           <SwipeListView

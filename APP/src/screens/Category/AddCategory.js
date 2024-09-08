@@ -10,11 +10,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RadioButton } from "react-native-paper";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Feather from "@expo/vector-icons/Feather";
+import { ThemeContext } from "../../../App";
 
 const Color = React.memo(
   ({ item, selectedColor, handle }) => {
@@ -43,11 +44,8 @@ const Color = React.memo(
 );
 
 const AddCategory = ({ navigation }) => {
+  const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [pColorLight, setPColorLight] = useState();
-  const [pColorLighter, setPColorLighter] = useState();
-  const [pColorDark, setPColorDark] = useState();
-  const [textColor, setTextColor] = useState();
   const [checked, setChecked] = useState("CHI");
   const [selectedColor, setSelectedColor] = useState();
   const [color, setColor] = useState([
@@ -62,10 +60,6 @@ const AddCategory = ({ navigation }) => {
   useEffect(() => {
     async function fetchColor() {
       setLoadingPage(true);
-      setPColorLight(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHT"));
-      setPColorLighter(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHTER"));
-      setPColorDark(await AsyncStorage.getItem("PRIMARY_COLOR_DARK"));
-      setTextColor(await AsyncStorage.getItem("TEXT_COLOR"));
       setSelectedColor(color[0].colorCode);
       setLoadingPage(false);
     }
@@ -205,7 +199,7 @@ const AddCategory = ({ navigation }) => {
             </View>
             <TextInput
               placeholder="Tên danh mục"
-              style={{ ...styles.textInput, borderBottomColor: pColorLight }}
+              style={{ ...styles.textInput, borderBottomColor: themeColors.primaryColorLight }}
             ></TextInput>
           </View>
           <RadioButton.Group

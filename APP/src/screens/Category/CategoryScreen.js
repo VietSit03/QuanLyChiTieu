@@ -6,11 +6,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { ThemeContext } from "../../../App";
 
 const CategoryScreen = ({ route, navigation }) => {
   const { type } = route.params;
+  const { themeColors } = useContext(ThemeContext);
   const data = Array.from({ length: 10 }, (_, index) => ({ id: index + 1 }));
 
   const chunkArray = (arr, chunkSize) => {
@@ -54,7 +56,7 @@ const CategoryScreen = ({ route, navigation }) => {
                 height: 60,
                 width: 60,
                 borderRadius: 30,
-                backgroundColor: "gold",
+                backgroundColor: themeColors.primaryColorLighter,
                 justifyContent: "center",
                 alignItems: "center",
               }}

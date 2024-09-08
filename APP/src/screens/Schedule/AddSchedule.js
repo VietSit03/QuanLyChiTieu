@@ -1,20 +1,18 @@
 import { ActivityIndicator, StyleSheet } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AddScheduleScreen from "./AddScheduleScreen";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { ThemeContext } from "../../../App";
 
 const Tab = createMaterialTopTabNavigator();
 
 const AddSchedule = ({ navigation }) => {
+  const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [primaryColor, setPrimaryColor] = useState();
-  const [headerBgColor, setHeaderBgColor] = useState();
 
   useEffect(() => {
     async function fetchPrimaryColor() {
-      setPrimaryColor(await AsyncStorage.getItem("PRIMARY_COLOR"));
-      setHeaderBgColor(await AsyncStorage.getItem("HEADER_BG_COLOR"));
       setLoadingPage(false);
     }
 
@@ -28,14 +26,14 @@ const AddSchedule = ({ navigation }) => {
       ) : (
         <Tab.Navigator
           screenOptions={{
-            tabBarActiveTintColor: primaryColor,
+            tabBarActiveTintColor: themeColors.primaryColorLight,
             tabBarInactiveTintColor: "#6c757d",
             tabBarStyle: {
               borderTopWidth: 1,
               borderTopColor: "#dcdcdc",
             },
             tabBarIndicatorStyle: {
-              backgroundColor: headerBgColor,
+              backgroundColor: themeColors.primaryColorDark,
             },
             tabBarLabelStyle: {
               fontSize: 14,
