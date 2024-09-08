@@ -9,12 +9,11 @@ import {
 } from "react-native";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SwipeListView } from "react-native-swipe-list-view";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import { Switch } from "react-native-paper";
 import AddSchedule from "./AddSchedule";
-import { ThemeContext } from "../../../App";
+import { ThemeContext } from "../../Theme";
 
 const ScheduleSwitch = React.memo(
   ({ item, toggleSwitch, color }) => {

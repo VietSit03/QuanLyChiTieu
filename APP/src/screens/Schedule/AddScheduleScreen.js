@@ -9,11 +9,10 @@ import {
   View,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TextInput } from "react-native-paper";
 import { Dropdown } from "react-native-element-dropdown";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { ThemeContext } from "../../../App";
+import { ThemeContext } from "../../Theme";
 
 const frequency = [
   { id: "MOTLAN", name: "Một lần" },

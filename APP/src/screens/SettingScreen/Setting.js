@@ -8,10 +8,8 @@ import {
 } from "react-native";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { useFocusEffect } from "@react-navigation/native";
-import { ThemeContext } from "../../../App";
+import { ThemeContext } from "../../Theme";
 
 const Setting = ({ navigation }) => {
   const { themeColors } = useContext(ThemeContext);

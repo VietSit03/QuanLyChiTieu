@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import React, { useContext, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { ThemeContext } from "../../../App";
+import { ThemeContext } from "../../Theme";
 
 const CategoryScreen = ({ route, navigation }) => {
   const { type } = route.params;

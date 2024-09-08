@@ -1,18 +1,21 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useContext } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { useFocusEffect } from "@react-navigation/native";
-import { ThemeContext } from "../../App";
+import { ThemeContext } from "../Theme";
 
 function CustomDrawer(props) {
   const { themeColors } = useContext(ThemeContext);
 
   return (
-    <View style={{ ...styles.container, backgroundColor: themeColors.primaryColorLight }}>
+    <View
+      style={{
+        ...styles.container,
+        backgroundColor: themeColors.primaryColorLight,
+      }}
+    >
       <View
         style={{
           ...styles.header,
@@ -21,7 +24,12 @@ function CustomDrawer(props) {
         }}
       >
         <View style={styles.headerItem}>
-          <Text style={{ ...styles.headerText, color: themeColors.primaryColorText }}>
+          <Text
+            style={{
+              ...styles.headerText,
+              color: themeColors.primaryColorText,
+            }}
+          >
             Quản lý chi tiêu
           </Text>
         </View>
@@ -55,9 +63,15 @@ function CustomDrawer(props) {
           onPress={() => props.navigation.navigate("Home")}
         >
           <View style={styles.icon}>
-            <Ionicons name="home" size={20} color={themeColors.primaryColorText} />
+            <Ionicons
+              name="home"
+              size={20}
+              color={themeColors.primaryColorText}
+            />
           </View>
-          <Text style={{ ...styles.itemText, color: themeColors.primaryColorText }}>
+          <Text
+            style={{ ...styles.itemText, color: themeColors.primaryColorText }}
+          >
             Trang chủ
           </Text>
         </TouchableOpacity>
@@ -66,9 +80,17 @@ function CustomDrawer(props) {
           onPress={() => props.navigation.navigate("Category")}
         >
           <View style={styles.icon}>
-            <FontAwesome5 name="list-ol" size={18} color={themeColors.primaryColorText} />
+            <FontAwesome5
+              name="list-ol"
+              size={18}
+              color={themeColors.primaryColorText}
+            />
           </View>
-          <Text style={{ ...styles.itemText, color: themeColors.primaryColorText }}>Danh mục</Text>
+          <Text
+            style={{ ...styles.itemText, color: themeColors.primaryColorText }}
+          >
+            Danh mục
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.item}
@@ -81,7 +103,9 @@ function CustomDrawer(props) {
               color={themeColors.primaryColorText}
             />
           </View>
-          <Text style={{ ...styles.itemText, color: themeColors.primaryColorText }}>
+          <Text
+            style={{ ...styles.itemText, color: themeColors.primaryColorText }}
+          >
             Thanh toán theo lịch
           </Text>
         </TouchableOpacity>
@@ -90,9 +114,17 @@ function CustomDrawer(props) {
           onPress={() => props.navigation.navigate("Setting")}
         >
           <View style={styles.icon}>
-            <AntDesign name="setting" size={22} color={themeColors.primaryColorText} />
+            <AntDesign
+              name="setting"
+              size={22}
+              color={themeColors.primaryColorText}
+            />
           </View>
-          <Text style={{ ...styles.itemText, color: themeColors.primaryColorText }}>Cài đặt</Text>
+          <Text
+            style={{ ...styles.itemText, color: themeColors.primaryColorText }}
+          >
+            Cài đặt
+          </Text>
         </TouchableOpacity>
         {/* Thêm các mục khác tại đây */}
       </View>

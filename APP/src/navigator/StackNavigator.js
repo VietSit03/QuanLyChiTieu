@@ -5,15 +5,14 @@ import Category from "../screens/Category/Category";
 import Setting from "../screens/SettingScreen/Setting";
 import AddCategory from "../screens/Category/AddCategory";
 import Entypo from "@expo/vector-icons/Entypo";
-import { DrawerActions, useFocusEffect } from "@react-navigation/native";
-import { useCallback, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DrawerActions } from "@react-navigation/native";
+import { useContext } from "react";
 import IconCategory from "../screens/Category/IconCategory";
 import AddSchedule from "../screens/Schedule/AddSchedule";
 import CategoryScreen from "../screens/Category/CategoryScreen";
 import Theme from "../screens/SettingScreen/Theme";
 import Currency from "../screens/SettingScreen/Currency";
-import { ThemeContext } from "../../App";
+import { ThemeContext } from "../Theme";
 
 const Stack = createStackNavigator();
 

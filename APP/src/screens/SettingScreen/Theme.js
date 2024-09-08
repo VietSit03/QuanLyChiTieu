@@ -9,7 +9,7 @@ import {
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ThemeContext } from "../../../App";
+import { ThemeContext } from "../../Theme";
 import { useFocusEffect } from "@react-navigation/native";
 
 const Color = React.memo(

@@ -2,7 +2,7 @@ import { StyleSheet, ActivityIndicator } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import CategoryScreen from "./CategoryScreen";
-import { ThemeContext } from "../../../App";
+import { ThemeContext } from "../../Theme";
 
 const Tab = createMaterialTopTabNavigator();
 

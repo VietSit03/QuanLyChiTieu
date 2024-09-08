@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import HomeScreen from "./HomeScreen";
-import { ThemeContext } from "../../../App";
+import { ThemeContext } from "../../Theme";
 
 const Tab = createMaterialTopTabNavigator();
 

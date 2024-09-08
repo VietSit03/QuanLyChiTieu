@@ -10,12 +10,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, {useContext, useEffect, useState } from "react";
 import { RadioButton } from "react-native-paper";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Feather from "@expo/vector-icons/Feather";
-import { ThemeContext } from "../../../App";
+import { ThemeContext } from "../../Theme";
 
 const Color = React.memo(
   ({ item, selectedColor, handle }) => {
