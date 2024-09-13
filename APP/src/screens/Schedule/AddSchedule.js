@@ -1,12 +1,13 @@
 import { ActivityIndicator, StyleSheet } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import AddScheduleScreen from "./AddScheduleScreen";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import HomeScreen from "./HomeScreen";
 import { ThemeContext } from "../../Theme";
 
 const Tab = createMaterialTopTabNavigator();
 
-const Home = () => {
+const AddSchedule = ({ navigation }) => {
   const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
 
@@ -42,18 +43,13 @@ const Home = () => {
           }}
         >
           <Tab.Screen
-            name="TỔNG CỘNG"
-            component={HomeScreen}
-            initialParams={{ type: "TONG" }}
-          />
-          <Tab.Screen
             name="CHI PHÍ"
-            component={HomeScreen}
+            component={AddScheduleScreen}
             initialParams={{ type: "CHI" }}
           />
           <Tab.Screen
             name="THU NHẬP"
-            component={HomeScreen}
+            component={AddScheduleScreen}
             initialParams={{ type: "THU" }}
           />
         </Tab.Navigator>
@@ -62,12 +58,6 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default AddSchedule;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
+const styles = StyleSheet.create({});

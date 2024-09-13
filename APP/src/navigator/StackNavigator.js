@@ -1,27 +1,24 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import Home from "../screens/Home/Home";
-import Schedule from "../screens/Schedule";
+import Schedule from "../screens/Schedule/Schedule";
 import Category from "../screens/Category/Category";
-import Setting from "../screens/Setting";
+import Setting from "../screens/SettingScreen/Setting";
 import AddCategory from "../screens/Category/AddCategory";
 import Entypo from "@expo/vector-icons/Entypo";
 import { DrawerActions } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useContext } from "react";
 import IconCategory from "../screens/Category/IconCategory";
+import AddSchedule from "../screens/Schedule/AddSchedule";
+import CategoryScreen from "../screens/Category/CategoryScreen";
+import Theme from "../screens/SettingScreen/Theme";
+import Currency from "../screens/SettingScreen/Currency";
+import { ThemeContext } from "../Theme";
+import AddTransaction from "../screens/Transaction/AddTransaction";
 
 const Stack = createStackNavigator();
 
 function StackNavigator({ navigation }) {
-  const [primaryColor, setPrimaryColor] = useState();
-
-  useEffect(() => {
-    async function fetchPrimaryColor() {
-      setPrimaryColor(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHT"));
-    }
-
-    fetchPrimaryColor();
-  }, []);
+  const { themeColors } = useContext(ThemeContext);
 
   function DrawerNavigator() {
     return (
@@ -30,14 +27,14 @@ function StackNavigator({ navigation }) {
         size={26}
         color="white"
         onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-        style={{ marginLeft: 10 }}
+        style={{ marginLeft: 15 }}
       />
     );
   }
 
   const screenOptions = () => ({
     headerStyle: {
-      backgroundColor: primaryColor,
+      backgroundColor: themeColors.primaryColorLight,
       elevation: 4,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
@@ -65,7 +62,7 @@ function StackNavigator({ navigation }) {
       <Stack.Screen
         name="Schedule"
         component={Schedule}
-        options={drawer("Thanh toàn theo lịch")}
+        options={drawer("Thanh toán theo lịch")}
       />
       <Stack.Screen
         name="Category"
@@ -86,6 +83,31 @@ function StackNavigator({ navigation }) {
         name="IconCategory"
         component={IconCategory}
         options={{ title: "Biểu tượng danh mục" }}
+      />
+      <Stack.Screen
+        name="AddSchedule"
+        component={AddSchedule}
+        options={{ title: "Tạo lịch thanh toán" }}
+      />
+      <Stack.Screen
+        name="CategoryScreen"
+        component={CategoryScreen}
+        options={{ title: "Danh mục" }}
+      />
+      <Stack.Screen
+        name="Theme"
+        component={Theme}
+        options={{ title: "Màu sắc" }}
+      />
+      <Stack.Screen
+        name="Currency"
+        component={Currency}
+        options={{ title: "Tiền tệ" }}
+      />
+      <Stack.Screen
+        name="AddTransaction"
+        component={AddTransaction}
+        options={{ title: "Thêm giao dịch" }}
       />
     </Stack.Navigator>
   );

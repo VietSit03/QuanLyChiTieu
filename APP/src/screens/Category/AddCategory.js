@@ -10,11 +10,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, {useContext, useEffect, useState } from "react";
 import { RadioButton } from "react-native-paper";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Feather from "@expo/vector-icons/Feather";
+import { ThemeContext } from "../../Theme";
 
 const Color = React.memo(
   ({ item, selectedColor, handle }) => {
@@ -43,11 +43,8 @@ const Color = React.memo(
 );
 
 const AddCategory = ({ navigation }) => {
+  const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [pColorLight, setPColorLight] = useState();
-  const [pColorLighter, setPColorLighter] = useState();
-  const [pColorDark, setPColorDark] = useState();
-  const [textColor, setTextColor] = useState();
   const [checked, setChecked] = useState("CHI");
   const [selectedColor, setSelectedColor] = useState();
   const [color, setColor] = useState([
@@ -62,10 +59,6 @@ const AddCategory = ({ navigation }) => {
   useEffect(() => {
     async function fetchColor() {
       setLoadingPage(true);
-      setPColorLight(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHT"));
-      setPColorLighter(await AsyncStorage.getItem("PRIMARY_COLOR_LIGHTER"));
-      setPColorDark(await AsyncStorage.getItem("PRIMARY_COLOR_DARK"));
-      setTextColor(await AsyncStorage.getItem("TEXT_COLOR"));
       setSelectedColor(color[0].colorCode);
       setLoadingPage(false);
     }
@@ -116,7 +109,7 @@ const AddCategory = ({ navigation }) => {
                 height: 60,
                 width: 60,
                 borderRadius: 30,
-                backgroundColor: "#FFC125",
+                backgroundColor: themeColors.primaryColorLighter,
                 justifyContent: "center",
                 alignItems: "center",
               }}
@@ -205,7 +198,7 @@ const AddCategory = ({ navigation }) => {
             </View>
             <TextInput
               placeholder="Tên danh mục"
-              style={{ ...styles.textInput, borderBottomColor: pColorLight }}
+              style={{ ...styles.textInput, borderBottomColor: themeColors.primaryColorLight }}
             ></TextInput>
           </View>
           <RadioButton.Group
@@ -259,19 +252,7 @@ const AddCategory = ({ navigation }) => {
             }}
           >
             <TouchableOpacity
-              style={{
-                backgroundColor: "#FFC125",
-                justifyContent: "center",
-                alignItems: "center",
-                height: 50,
-                width: "70%",
-                borderRadius: 25,
-                elevation: 4,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 4,
-              }}
+              style={styles.btnAdd}
               onPress={() => handleAddCategory()}
             >
               <Text style={{ fontSize: 16 }}>Thêm</Text>
@@ -308,4 +289,17 @@ const styles = StyleSheet.create({
     color: "gray",
   },
   sectionBody: { marginTop: 20 },
+  btnAdd: {
+    backgroundColor: "#FFC125",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    width: "70%",
+    borderRadius: 25,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
 });

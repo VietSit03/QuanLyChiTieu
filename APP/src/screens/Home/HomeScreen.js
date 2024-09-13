@@ -1,17 +1,21 @@
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableHighlight,
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Icon from "react-native-vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { ThemeContext } from "../../Theme";
 
 const TransSummary = React.memo(
-  ({ item, handle }) => {
+  ({ item, handle, theme }) => {
     return (
       <View style={styles.transSummary}>
         <TouchableOpacity
@@ -53,24 +57,29 @@ const TransSummary = React.memo(
                 />
               </View>
               <View style={styles.itemBodyTS}>
-                <Text style={{ fontSize: 16 }}>Tổng chi</Text>
+                <Text style={{ fontSize: 18 }}>Tổng cộng</Text>
                 <Text
                   style={{ color: "gray" }}
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  2 khoản chi
+                  {item.expenseNum} khoản chi
                 </Text>
                 <Text
                   style={{ color: "gray" }}
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  1 khoản thu
+                  {item.revenueNum} khoản thu
                 </Text>
               </View>
               <View style={styles.itemFooterTS}>
-                <Text style={[{ fontSize: 16 }, { color: "orange" }]}>
+                <Text
+                  style={[
+                    { fontSize: 16 },
+                    { color: theme.primaryColorLighter },
+                  ]}
+                >
                   {item.amount.toLocaleString("vi-VN")} VND
                 </Text>
               </View>
@@ -105,25 +114,47 @@ const TransSummary = React.memo(
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.item.isDetail === nextProps.item.isDetail;
+    return (
+      prevProps.item.isDetail === nextProps.item.isDetail &&
+      prevProps.theme === nextProps.theme
+    );
   }
 );
 
 const HomeScreen = ({ route, navigation }) => {
-  const [data, setData] = useState([
-    {
-      id: 1,
-      isDetail: false,
-      time: `7-2024`,
-      amount: 220703,
-    },
-    {
-      id: 2,
-      isDetail: false,
-      time: `8-2024`,
-      amount: 220703,
-    },
-  ]);
+  const { type } = route.params;
+  const { themeColors } = useContext(ThemeContext);
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [data, setData] = useState();
+  const [totalAmount, setTotalAmount] = useState(0);
+
+  useEffect(() => {
+    async function fetch() {
+      const dataFetch = [
+        {
+          id: 1,
+          isDetail: false,
+          time: `7-2024`,
+          expenseNum: 1,
+          revenueNum: 4,
+          amount: 220703,
+        },
+        {
+          id: 2,
+          isDetail: false,
+          time: `8-2024`,
+          expenseNum: 5,
+          revenueNum: 2,
+          amount: -838699,
+        },
+      ];
+      setData(dataFetch);
+      setTotalAmount(dataFetch.reduce((acc, item) => acc + item.amount, 0));
+      setLoadingPage(false);
+    }
+
+    fetch();
+  }, []);
 
   const handleDetail = (item) => {
     setData((prevData) =>
@@ -134,25 +165,64 @@ const HomeScreen = ({ route, navigation }) => {
   };
 
   const renderTransSummary = ({ item }) => {
-    return <TransSummary item={item} handle={() => handleDetail(item)} />;
+    return (
+      <TransSummary
+        item={item}
+        handle={() => handleDetail(item)}
+        theme={themeColors}
+      />
+    );
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.box}>
-        <Text style={{ fontSize: 18 }}>
-          {Number("1000000").toLocaleString("en-US")} VND
-        </Text>
-      </View>
-      <View style={{ width: "100%", marginTop: 10 }}>
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.id}
-          renderItem={renderTransSummary}
-          scrollEnabled={false}
-        />
-      </View>
-    </ScrollView>
+    <>
+      {loadingPage ? (
+        <ActivityIndicator size={"large"} />
+      ) : (
+        <View style={styles.container}>
+          <ScrollView contentContainerStyle={styles.sc}>
+            <View
+              style={{
+                ...styles.box,
+                backgroundColor: themeColors.primaryColorLight,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: themeColors.primaryColorText,
+                  fontWeight: "bold",
+                }}
+              >
+                {totalAmount.toLocaleString("en-US")} VND
+              </Text>
+            </View>
+            <View style={{ width: "100%", marginTop: 10 }}>
+              <FlatList
+                data={data}
+                keyExtractor={(item) => item.id}
+                renderItem={renderTransSummary}
+                scrollEnabled={false}
+              />
+            </View>
+            <View style={{ height: 100 }}></View>
+          </ScrollView>
+          {type != "TONG" && (
+            <TouchableOpacity
+              style={{
+                ...styles.btnAddTrans,
+                backgroundColor: themeColors.primaryColorLighter,
+              }}
+              onPress={() =>
+                navigation.navigate("AddTransaction", { type: type })
+              }
+            >
+              <Ionicons name="add-outline" size={40} color="white" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </>
   );
 };
 
@@ -160,17 +230,19 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  sc: {
     flexGrow: 1,
     alignItems: "center",
   },
   box: {
-    marginTop: 10,
-    backgroundColor: "#FFC125",
-    height: 60,
+    marginTop: 15,
+    height: 50,
     width: "80%",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 30,
+    borderRadius: 15,
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -183,7 +255,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     marginBottom: 10,
     marginHorizontal: 10,
-    paddingVertical: 5,
+    paddingBottom: 5,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -217,5 +289,15 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "flex-end",
+  },
+  btnAddTrans: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    height: 60,
+    width: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

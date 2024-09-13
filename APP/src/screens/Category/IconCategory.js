@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   Pressable,
@@ -8,9 +9,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useContext, useEffect, useState } from "react";
+import { ThemeContext } from "../../Theme";
 
 const purpose = [
   { purposeName: "Đồ ăn", code: "FOOD" },
@@ -86,13 +86,12 @@ const Icon = React.memo(
 );
 
 const IconCategory = () => {
+  const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [pColorDark, setPColorDark] = useState();
 
   useEffect(() => {
     async function fetchColor() {
       setLoadingPage(true);
-      setPColorDark(await AsyncStorage.getItem("PRIMARY_COLOR_DARK"));
       setLoadingPage(false);
     }
 
@@ -139,7 +138,7 @@ const IconCategory = () => {
               item={icon}
               selectedCategory={selectedCategory}
               handle={() => setSelectedCategory(icon)}
-              colorSelected={pColorDark}
+              colorSelected={themeColors.primaryColorDark}
             />
           );
         })}
@@ -152,30 +151,36 @@ const IconCategory = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <FlatList
-          data={purpose}
-          keyExtractor={(item) => item.code}
-          renderItem={renderPurpose}
-          scrollEnabled={false}
-          style={styles.flPurpose}
-        />
-        <View style={{ backgroundColor: "transparent", height: 50 }}></View>
-      </ScrollView>
-      <View style={styles.btnSelect}>
-        <TouchableOpacity
-          style={
-            selectedCategory.id != -1
-              ? styles.btnSelectActive
-              : styles.btnSelectInactive
-          }
-          disabled={selectedCategory.id == -1}
-        >
-          <Text>Chọn</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    <>
+      {loadingPage ? (
+        <ActivityIndicator size={"large"} />
+      ) : (
+        <View style={styles.container}>
+          <ScrollView style={styles.scrollView}>
+            <FlatList
+              data={purpose}
+              keyExtractor={(item) => item.code}
+              renderItem={renderPurpose}
+              scrollEnabled={false}
+              style={styles.flPurpose}
+            />
+            <View style={{ backgroundColor: "transparent", height: 50 }}></View>
+          </ScrollView>
+          <View style={styles.btnSelect}>
+            <TouchableOpacity
+              style={
+                selectedCategory.id != -1
+                  ? styles.btnSelectActive
+                  : styles.btnSelectInactive
+              }
+              disabled={selectedCategory.id == -1}
+            >
+              <Text>Chọn</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </>
   );
 };
 

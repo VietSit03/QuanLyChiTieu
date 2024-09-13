@@ -1,20 +1,17 @@
 import { StyleSheet, ActivityIndicator } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import CategorySreen from "./CategorySreen";
+import CategoryScreen from "./CategoryScreen";
+import { ThemeContext } from "../../Theme";
 
 const Tab = createMaterialTopTabNavigator();
 
 const Category = () => {
+  const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [primaryColor, setPrimaryColor] = useState();
-  const [headerBgColor, setHeaderBgColor] = useState();
 
   useEffect(() => {
     async function fetchPrimaryColor() {
-      setPrimaryColor(await AsyncStorage.getItem("PRIMARY_COLOR"));
-      setHeaderBgColor(await AsyncStorage.getItem("HEADER_BG_COLOR"));
       setLoadingPage(false);
     }
 
@@ -28,14 +25,14 @@ const Category = () => {
       ) : (
         <Tab.Navigator
           screenOptions={{
-            tabBarActiveTintColor: primaryColor,
+            tabBarActiveTintColor: themeColors.primaryColorLight,
             tabBarInactiveTintColor: "#6c757d",
             tabBarStyle: {
               borderTopWidth: 1,
               borderTopColor: "#dcdcdc",
             },
             tabBarIndicatorStyle: {
-              backgroundColor: headerBgColor,
+              backgroundColor: themeColors.primaryColorDark,
             },
             tabBarLabelStyle: {
               fontSize: 14,
@@ -46,12 +43,12 @@ const Category = () => {
         >
           <Tab.Screen
             name="CHI PHÍ"
-            component={CategorySreen}
+            component={CategoryScreen}
             initialParams={{ type: "CHI" }}
           />
           <Tab.Screen
             name="THU NHẬP"
-            component={CategorySreen}
+            component={CategoryScreen}
             initialParams={{ type: "THU" }}
           />
         </Tab.Navigator>
@@ -62,10 +59,4 @@ const Category = () => {
 
 export default Category;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
+const styles = StyleSheet.create({});
