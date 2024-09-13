@@ -1,7 +1,6 @@
 import { ActivityIndicator, StyleSheet } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import HomeScreen from "./HomeScreen";
 import { ThemeContext } from "../../Theme";
 
@@ -43,7 +42,7 @@ const Home = () => {
           }}
         >
           <Tab.Screen
-            name="TỔNG"
+            name="TỔNG CỘNG"
             component={HomeScreen}
             initialParams={{ type: "TONG" }}
           />

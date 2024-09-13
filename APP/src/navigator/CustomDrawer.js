@@ -19,7 +19,7 @@ function CustomDrawer(props) {
       <View
         style={{
           ...styles.header,
-          backgroundColor: themeColors.primaryColorDark,
+          backgroundColor: themeColors.primaryColorLight,
           borderBottomColor: themeColors.primaryColorText,
         }}
       >

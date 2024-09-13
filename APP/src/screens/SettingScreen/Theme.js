@@ -45,7 +45,7 @@ const Theme = ({ route, navigation }) => {
   const [selectedColor, setSelectedColor] = useState();
   const [color, setColor] = useState([
     {
-      primaryColorLight: "#FF9800",
+      primaryColorLight: "#FF7F50",
       primaryColorLighter: "#FF9800",
       primaryColorDark: "#FF8C00",
       primaryColorText: "#FFF",
@@ -53,7 +53,7 @@ const Theme = ({ route, navigation }) => {
     {
       primaryColorLight: "#FF69B4",
       primaryColorLighter: "#FFB6C1",
-      primaryColorDark: "#FF69B4",
+      primaryColorDark: "#C71585",
       primaryColorText: "#FFF",
     },
     {
@@ -69,8 +69,8 @@ const Theme = ({ route, navigation }) => {
       primaryColorText: "#FFF",
     },
     {
-      primaryColorLight: "#9400D3",
-      primaryColorLighter: "#BA55D3",
+      primaryColorLight: "#BA55D3",
+      primaryColorLighter: "#EE82EE",
       primaryColorDark: "#800080",
       primaryColorText: "#FFF",
     },

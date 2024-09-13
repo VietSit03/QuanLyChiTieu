@@ -13,6 +13,7 @@ import CategoryScreen from "../screens/Category/CategoryScreen";
 import Theme from "../screens/SettingScreen/Theme";
 import Currency from "../screens/SettingScreen/Currency";
 import { ThemeContext } from "../Theme";
+import AddTransaction from "../screens/Transaction/AddTransaction";
 
 const Stack = createStackNavigator();
 
@@ -102,6 +103,11 @@ function StackNavigator({ navigation }) {
         name="Currency"
         component={Currency}
         options={{ title: "Tiền tệ" }}
+      />
+      <Stack.Screen
+        name="AddTransaction"
+        component={AddTransaction}
+        options={{ title: "Thêm giao dịch" }}
       />
     </Stack.Navigator>
   );

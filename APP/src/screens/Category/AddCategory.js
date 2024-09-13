@@ -109,7 +109,7 @@ const AddCategory = ({ navigation }) => {
                 height: 60,
                 width: 60,
                 borderRadius: 30,
-                backgroundColor: "#FFC125",
+                backgroundColor: themeColors.primaryColorLighter,
                 justifyContent: "center",
                 alignItems: "center",
               }}
