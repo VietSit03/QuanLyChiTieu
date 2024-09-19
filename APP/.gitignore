@@ -33,3 +33,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Bỏ qua thư mục .vs của Visual Studio
+.vs/
