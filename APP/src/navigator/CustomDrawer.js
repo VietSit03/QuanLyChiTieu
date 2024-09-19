@@ -5,9 +5,15 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { ThemeContext } from "../Theme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function CustomDrawer(props) {
   const { themeColors } = useContext(ThemeContext);
+
+  const logOut = async () => {
+    await AsyncStorage.setItem("token", "");
+    props.navigation.replace("Login");
+  };
 
   return (
     <View
@@ -126,7 +132,20 @@ function CustomDrawer(props) {
             Cài đặt
           </Text>
         </TouchableOpacity>
-        {/* Thêm các mục khác tại đây */}
+        <TouchableOpacity style={styles.item} onPress={() => logOut()}>
+          <View style={styles.icon}>
+            <AntDesign
+              name="logout"
+              size={20}
+              color={themeColors.primaryColorText}
+            />
+          </View>
+          <Text
+            style={{ ...styles.itemText, color: themeColors.primaryColorText }}
+          >
+            Đăng xuất
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

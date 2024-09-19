@@ -11,18 +11,7 @@ import {
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../../Theme";
-
-const purpose = [
-  { purposeName: "Đồ ăn", code: "FOOD" },
-  { purposeName: "Thức uống", code: "DRINK" },
-  // { purposeName: "Sức khoẻ", code: "HEALTH" },
-  // { purposeName: "Di chuyển", code: "MOVING" },
-  // { purposeName: "Mua sắm", code: "SHOPPING" },
-  // { purposeName: "Làm đẹp", code: "BEAUTY" },
-  // { purposeName: "Giải trí", code: "ENTERTAINMENT" },
-  // { purposeName: "Giáo dục", code: "EDUCATION" },
-  // { purposeName: "Khác", code: "OTHER" },
-];
+import { API_URL } from "@env";
 
 const Purpose = React.memo(({ item, data, render }) => {
   return (
@@ -41,7 +30,6 @@ const Purpose = React.memo(({ item, data, render }) => {
 
 const Icon = React.memo(
   ({ item, handle, selectedCategory, colorSelected }) => {
-    console.log(item);
     if (item.empty) {
       return <View style={{ width: 80, height: 80 }} />;
     }
@@ -68,7 +56,7 @@ const Icon = React.memo(
           onPress={handle}
         >
           <Image
-            source={{ uri: "https://imgur.com/b0SG0aW.png" }}
+            source={{ uri: item.imgSrc }}
             style={{ width: 40, height: 40 }}
           />
         </TouchableOpacity>
@@ -90,12 +78,12 @@ const IconCategory = () => {
   const [loadingPage, setLoadingPage] = useState(true);
 
   useEffect(() => {
-    async function fetchColor() {
-      setLoadingPage(true);
+    async function fetchData() {
+      fetchCategory();
       setLoadingPage(false);
     }
 
-    fetchColor();
+    fetchData();
   }, []);
 
   const data = Array.from({ length: 10 }, (_, index) => ({
@@ -109,7 +97,10 @@ const IconCategory = () => {
     for (let i = 0; i < arr.length; i += chunkSize) {
       const chunk = arr.slice(i, i + chunkSize);
       while (chunk.length < chunkSize) {
-        chunk.push({ id: `empty-${chunk.length}`, empty: true });
+        chunk.push({
+          id: `empty-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          empty: true,
+        });
       }
       result.push(chunk);
     }
@@ -121,6 +112,29 @@ const IconCategory = () => {
   useEffect(() => {
     chunkArray(data, 4);
   }, [data]);
+
+  const [category, setCategory] = useState();
+
+  const fetchCategory = async () => {
+    const url = `${API_URL}/Category/GetAll`;
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      var apiResponse = await response.json();
+      setCategory(apiResponse.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   const renderCategory = ({ item }) => {
     return (
@@ -147,7 +161,13 @@ const IconCategory = () => {
   };
 
   const renderPurpose = ({ item }) => {
-    return <Purpose item={item} data={rows} render={renderCategory} />;
+    return (
+      <Purpose
+        item={item}
+        data={chunkArray(item.categories, 4)}
+        render={renderCategory}
+      />
+    );
   };
 
   return (
@@ -158,8 +178,8 @@ const IconCategory = () => {
         <View style={styles.container}>
           <ScrollView style={styles.scrollView}>
             <FlatList
-              data={purpose}
-              keyExtractor={(item) => item.code}
+              data={category}
+              keyExtractor={(item, index) => index.toString()}
               renderItem={renderPurpose}
               scrollEnabled={false}
               style={styles.flPurpose}

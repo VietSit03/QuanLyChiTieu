@@ -14,6 +14,10 @@ import Theme from "../screens/SettingScreen/Theme";
 import Currency from "../screens/SettingScreen/Currency";
 import { ThemeContext } from "../Theme";
 import AddTransaction from "../screens/Transaction/AddTransaction";
+import Login from "../screens/Login/Login";
+import Register from "../screens/Login/Register";
+import ForgetPassword from "../screens/Login/ForgetPassword";
+import ChangePassword from "../screens/Login/ChangePassword";
 
 const Stack = createStackNavigator();
 
@@ -108,6 +112,26 @@ function StackNavigator({ navigation }) {
         name="AddTransaction"
         component={AddTransaction}
         options={{ title: "Thêm giao dịch" }}
+      />
+      <Stack.Screen
+        name="Login"
+        component={Login}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Register"
+        component={Register}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ForgetPassword"
+        component={ForgetPassword}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ChangePassword"
+        component={ChangePassword}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
