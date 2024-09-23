@@ -9,12 +9,30 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Dimensions,
+  Alert,
 } from "react-native";
-import React, {useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { RadioButton } from "react-native-paper";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Feather from "@expo/vector-icons/Feather";
 import { ThemeContext } from "../../Theme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@env";
+import { LoadingPage } from "../../component/Loading";
+import { alert, checkToken, isEmptyInput } from "../../common";
+
+const screenWidth = Dimensions.get("window").width;
+
+const color = [
+  { colorCode: "#FFCE78" },
+  { colorCode: "#EDDF64" },
+  { colorCode: "#FFB6C1" },
+  { colorCode: "#E87B7E" },
+  { colorCode: "#B0E0E6" },
+  { colorCode: "#00B800" },
+  { colorCode: "#D8BFD8" },
+];
 
 const Color = React.memo(
   ({ item, selectedColor, handle }) => {
@@ -42,63 +60,11 @@ const Color = React.memo(
     prevProps.item.colorCode === nextProps.item.colorCode
 );
 
-const AddCategory = ({ navigation }) => {
-  const { themeColors } = useContext(ThemeContext);
-  const [loadingPage, setLoadingPage] = useState(true);
-  const [checked, setChecked] = useState("CHI");
-  const [selectedColor, setSelectedColor] = useState();
-  const [color, setColor] = useState([
-    { colorCode: "#E91E63" },
-    { colorCode: "#4CAF50" },
-    { colorCode: "#2196F3" },
-    { colorCode: "#7E5C4F" },
-    { colorCode: "#FF9800" },
-    { colorCode: "#800080" },
-  ]);
-
-  useEffect(() => {
-    async function fetchColor() {
-      setLoadingPage(true);
-      setSelectedColor(color[0].colorCode);
-      setLoadingPage(false);
-    }
-
-    fetchColor();
-  }, []);
-
-  const data = Array.from({ length: 10 }, (_, index) => ({ id: index + 1 }));
-
-  const chunkArray = (arr, chunkSize) => {
-    const result = [];
-    for (let i = 0; i < arr.length; i += chunkSize) {
-      result.push(arr.slice(i, i + chunkSize));
-    }
-
-    // Adding the special category
-    const specialCategory = { id: "special", isSpecial: true };
-
-    // If the last row has space for more items, push the special category there.
-    if (result[result.length - 1].length < chunkSize) {
-      result[result.length - 1].push(specialCategory);
-    } else {
-      // Otherwise, create a new row for the special category.
-      result.push([specialCategory]);
-    }
-
-    // Add empty placeholders to the last row if needed
-    const lastRow = result[result.length - 1];
-    while (lastRow.length < chunkSize) {
-      lastRow.push({ id: `empty-${lastRow.length}`, empty: true });
-    }
-
-    return result;
-  };
-
-  const rows = chunkArray(data, 4);
-
-  const Icon = ({ item }) => {
+const Icon = React.memo(
+  ({ item, handle, selectedColor, selectedIcon, themeColors }) => {
+    var size = screenWidth / 6;
     if (item.empty) {
-      return <View style={{ width: 60, height: 60 }} />;
+      return <View style={{ width: size + 20, height: size + 20 }} />;
     }
     return (
       <>
@@ -106,39 +72,101 @@ const AddCategory = ({ navigation }) => {
           <View style={{ alignItems: "center" }}>
             <TouchableOpacity
               style={{
-                height: 60,
-                width: 60,
-                borderRadius: 30,
+                margin: 10,
+                height: size,
+                width: size,
+                borderRadius: size / 2,
                 backgroundColor: themeColors.primaryColorLighter,
                 justifyContent: "center",
                 alignItems: "center",
               }}
-              onPress={() => navigation.navigate("IconCategory")}
+              onPress={() =>
+                navigation.navigate("IconCategory", { type: type })
+              }
             >
               <Ionicons name="add-outline" size={40} color="white" />
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={{ alignItems: "center" }}>
+          <View
+            style={{
+              alignItems: "center",
+              borderWidth: item.id == selectedIcon.id ? 1 : 0,
+              padding: item.id == selectedIcon.id ? 9 : 10,
+              backgroundColor:
+                item.id == selectedIcon.id ? "#fff" : "transparent",
+              borderColor: "gray",
+              borderRadius: 10,
+            }}
+          >
             <Pressable
               style={{
-                height: 60,
-                width: 60,
-                borderRadius: 30,
-                backgroundColor: selectedColor,
+                height: size,
+                width: size,
+                borderRadius: size / 2,
+                backgroundColor:
+                  item.id == selectedIcon.id ? selectedColor : "#DCDCDC",
                 justifyContent: "center",
                 alignItems: "center",
               }}
+              onPress={handle}
             >
               <Image
-                source={{ uri: "https://imgur.com/b0SG0aW.png" }}
-                style={{ width: 40, height: 40 }}
+                source={{ uri: item.imgSrc }}
+                style={{ width: size - 25, height: size - 25 }}
               />
             </Pressable>
           </View>
         )}
       </>
     );
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.selectedColor === nextProps.selectedColor &&
+      prevProps.selectedIcon.id !== prevProps.item.id &&
+      nextProps.selectedIcon.id !== prevProps.item.id
+    );
+  }
+);
+
+const AddCategory = ({ navigation, route }) => {
+  const { themeColors } = useContext(ThemeContext);
+  const type = route.params?.type || "CHI";
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [name, setName] = useState({
+    title: "Tên danh mục",
+    value: "",
+    error: "",
+  });
+  const [icon, setIcon] = useState({
+    error: "",
+  });
+  const [checked, setChecked] = useState(type);
+  const [selectedColor, setSelectedColor] = useState();
+  const [selectedIcon, setSelectedIcon] = useState(null);
+  const [category, setCategory] = useState();
+
+  const chunkArray = (arr, chunkSize) => {
+    const result = [];
+    for (let i = 0; i < arr.length; i += chunkSize) {
+      result.push(arr.slice(i, i + chunkSize));
+    }
+
+    const specialCategory = { id: "special", isSpecial: true };
+
+    if (result[result.length - 1].length < chunkSize) {
+      result[result.length - 1].push(specialCategory);
+    } else {
+      result.push([specialCategory]);
+    }
+
+    const lastRow = result[result.length - 1];
+    while (lastRow.length < chunkSize) {
+      lastRow.push({ id: `empty-${lastRow.length}`, empty: true });
+    }
+
+    return result;
   };
 
   const renderRow = ({ item }) => {
@@ -151,11 +179,42 @@ const AddCategory = ({ navigation }) => {
         }}
       >
         {item.map((icon) => {
-          return <Icon key={icon.id} item={icon} />;
+          return (
+            <Icon
+              key={icon.id}
+              item={icon}
+              handle={() => {
+                setSelectedIcon(icon);
+              }}
+              selectedColor={selectedColor}
+              selectedIcon={selectedIcon}
+              themeColors={themeColors}
+            />
+          );
         })}
       </View>
     );
   };
+
+  const getSelectedColor = () => {
+    return selectedColor;
+  };
+
+  const checkIcon = () => {
+    if (selectedIcon.id == -1) {
+      setIcon({ error: "Chọn một biểu tượng danh mục" });
+      return false;
+    } else {
+      setIcon({ error: "" });
+      return true;
+    }
+  };
+
+  useEffect(() => {
+    if (selectedIcon != null) {
+      checkIcon();
+    }
+  }, [selectedIcon]);
 
   const renderColor = ({ item }) => {
     return (
@@ -168,13 +227,120 @@ const AddCategory = ({ navigation }) => {
   };
 
   const handleAddCategory = () => {
-    console.log("add category");
+    if (isEmptyInput(name, setName)) {
+      return;
+    }
+
+    if (!checkIcon()) {
+      return;
+    }
+
+    async function add() {
+      await fetchAddCategory();
+    }
+
+    add();
+  };
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoadingPage(true);
+      await fetchCategory();
+      setSelectedColor(color[0].colorCode);
+      setSelectedIcon({ id: -1, imgSrc: "https://imgur.com/LHXHUAb.png" });
+      setLoadingPage(false);
+    }
+
+    fetchData();
+  }, [checked]);
+
+  useEffect(() => {
+    if (route.params?.icon) {
+      setSelectedIcon(route.params?.icon);
+      return;
+    }
+    setSelectedIcon({ id: -1, imgSrc: "https://imgur.com/LHXHUAb.png" });
+  }, [route.params]);
+
+  const fetchCategory = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/Category/GetTop?num=15&type=${checked}`;
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        return;
+      }
+
+      var apiResponse = await response.json();
+
+      setCategory(apiResponse.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const fetchAddCategory = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/CustomCategory/Add`;
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          categoryID: selectedIcon.id,
+          categoryName: name.value,
+          categoryColor: selectedColor,
+          type: type,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        alert();
+        return;
+      }
+
+      alert("Thành công", "Thêm danh mục thành công.", () =>
+        navigation.goBack()
+      );
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   return (
     <>
       {loadingPage ? (
-        <ActivityIndicator size={"large"} />
+        <LoadingPage />
       ) : (
         <ScrollView
           style={styles.container}
@@ -183,23 +349,32 @@ const AddCategory = ({ navigation }) => {
           <View style={{ ...styles.fdRow, marginTop: 20 }}>
             <View
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: 15,
+                width: 40,
+                height: 40,
+                borderRadius: 20,
                 backgroundColor: selectedColor,
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
               <Image
-                source={{ uri: "https://imgur.com/b0SG0aW.png" }}
+                source={{ uri: selectedIcon.imgSrc }}
                 style={{ width: 20, height: 20 }}
               />
             </View>
-            <TextInput
-              placeholder="Tên danh mục"
-              style={{ ...styles.textInput, borderBottomColor: themeColors.primaryColorLight }}
-            ></TextInput>
+            <View style={styles.input}>
+              <TextInput
+                value={name.value}
+                placeholder="Tên danh mục"
+                style={{
+                  ...styles.textInput,
+                  borderBottomColor: themeColors.primaryColorLight,
+                }}
+                onChangeText={(text) => setName({ ...name, value: text })}
+                onBlur={() => isEmptyInput(name, setName)}
+              ></TextInput>
+              {name.error && <Text style={styles.errorText}>{name.error}</Text>}
+            </View>
           </View>
           <RadioButton.Group
             onValueChange={(value) => setChecked(value)}
@@ -224,9 +399,10 @@ const AddCategory = ({ navigation }) => {
           </RadioButton.Group>
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionHeader}>Biểu tượng</Text>
+            {icon.error && <Text style={styles.errorText}>{icon.error}</Text>}
             <FlatList
               style={styles.sectionBody}
-              data={rows}
+              data={chunkArray(category, 4)}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderRow}
               scrollEnabled={false}
@@ -275,9 +451,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  textInput: {
+  input: {
     flex: 1,
     marginLeft: 10,
+  },
+  textInput: {
     borderBottomWidth: 2,
     padding: 0,
     fontSize: 16,
@@ -301,5 +479,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 14,
+    marginTop: 5,
   },
 });

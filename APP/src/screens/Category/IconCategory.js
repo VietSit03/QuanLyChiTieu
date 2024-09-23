@@ -8,10 +8,16 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../../Theme";
 import { API_URL } from "@env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LoadingPage } from "../../component/Loading";
+import { alert, checkToken } from "../../common";
+
+const screenWidth = Dimensions.get("window").width;
 
 const Purpose = React.memo(({ item, data, render }) => {
   return (
@@ -30,8 +36,9 @@ const Purpose = React.memo(({ item, data, render }) => {
 
 const Icon = React.memo(
   ({ item, handle, selectedCategory, colorSelected }) => {
+    var size = screenWidth / 6;
     if (item.empty) {
-      return <View style={{ width: 80, height: 80 }} />;
+      return <View style={{ width: size + 20, height: size + 20 }} />;
     }
     return (
       <View
@@ -45,9 +52,9 @@ const Icon = React.memo(
       >
         <TouchableOpacity
           style={{
-            height: 60,
-            width: 60,
-            borderRadius: 30,
+            height: size,
+            width: size,
+            borderRadius: size / 2,
             backgroundColor:
               item.id == selectedCategory.id ? colorSelected : "#DCDCDC",
             justifyContent: "center",
@@ -57,7 +64,7 @@ const Icon = React.memo(
         >
           <Image
             source={{ uri: item.imgSrc }}
-            style={{ width: 40, height: 40 }}
+            style={{ width: size - 25, height: size - 25 }}
           />
         </TouchableOpacity>
       </View>
@@ -73,9 +80,10 @@ const Icon = React.memo(
   }
 );
 
-const IconCategory = () => {
+const IconCategory = ({ navigation, route }) => {
   const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
+  const { type } = route.params;
 
   useEffect(() => {
     async function fetchData() {
@@ -107,8 +115,6 @@ const IconCategory = () => {
     return result;
   };
 
-  const rows = chunkArray(data, 4);
-
   useEffect(() => {
     chunkArray(data, 4);
   }, [data]);
@@ -116,17 +122,30 @@ const IconCategory = () => {
   const [category, setCategory] = useState();
 
   const fetchCategory = async () => {
+    const token = await AsyncStorage.getItem("token");
     const url = `${API_URL}/Category/GetAll`;
+
     try {
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        alert();
+        return;
       }
 
       var apiResponse = await response.json();
@@ -152,7 +171,7 @@ const IconCategory = () => {
               item={icon}
               selectedCategory={selectedCategory}
               handle={() => setSelectedCategory(icon)}
-              colorSelected={themeColors.primaryColorDark}
+              colorSelected={themeColors.primaryColorLighter}
             />
           );
         })}
@@ -173,7 +192,7 @@ const IconCategory = () => {
   return (
     <>
       {loadingPage ? (
-        <ActivityIndicator size={"large"} />
+        <LoadingPage />
       ) : (
         <View style={styles.container}>
           <ScrollView style={styles.scrollView}>
@@ -194,6 +213,12 @@ const IconCategory = () => {
                   : styles.btnSelectInactive
               }
               disabled={selectedCategory.id == -1}
+              onPress={() =>
+                navigation.navigate("AddCategory", {
+                  icon: selectedCategory,
+                  type: type,
+                })
+              }
             >
               <Text>Chọn</Text>
             </TouchableOpacity>
@@ -219,7 +244,7 @@ const styles = StyleSheet.create({
   },
   btnSelect: {
     position: "absolute",
-    bottom: 10, // Khoảng cách từ dưới màn hình lên
+    bottom: 10,
     left: 0,
     right: 0,
     alignItems: "center",

@@ -75,7 +75,6 @@ app.UseCors("AllowAll");
 
 // Enable authentication
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.MapControllers();

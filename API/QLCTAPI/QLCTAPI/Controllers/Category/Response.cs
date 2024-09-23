@@ -3,13 +3,14 @@ using QLCTAPI.Models;
 
 namespace QLCTAPI.Controllers.Category
 {
-    public class Response
+    public class CategoryByTypeResponse
     {
-        public string message { get; set; }
-        public List<CategoryDTO> data { get; set; }
-        public Response(string message, List<CategoryDTO> list) {
-            this.message = message;
-            this.data = list;
-        }
+        public string ErrorCode { get; set; }
+        public List<ListCategoryDTO> Data { get; set; }
+    }
+    public class CategoryAddResponse
+    {
+        public string ErrorCode { get; set; }
+        public List<CategoryDTO> Data { get; set; }
     }
 }

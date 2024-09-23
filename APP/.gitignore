@@ -35,4 +35,4 @@ yarn-error.*
 *.tsbuildinfo
 
 # Bỏ qua thư mục .vs của Visual Studio
-../API/QLCTAPI/.vs/
+.vs/

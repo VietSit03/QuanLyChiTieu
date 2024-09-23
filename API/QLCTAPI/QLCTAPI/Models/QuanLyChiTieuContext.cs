@@ -38,13 +38,14 @@ public partial class QuanLyChiTieuContext : DbContext
     public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Data Source=WIN-8PMB5F2TOCE;Initial Catalog=QuanLyChiTieu;User ID=sa;Password=123456;Trust Server Certificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CategoryDefine>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC270B91401E");
+            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC2741E7D96A");
 
             entity.ToTable("CategoryDefine");
 
@@ -53,11 +54,14 @@ public partial class QuanLyChiTieuContext : DbContext
             entity.Property(e => e.PurposeCode)
                 .HasMaxLength(100)
                 .IsUnicode(false);
+            entity.Property(e => e.Type)
+                .HasMaxLength(50)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<CurrencyDefine>(entity =>
         {
-            entity.HasKey(e => e.CurrencyCode).HasName("PK__Currency__408426BEA9499FF2");
+            entity.HasKey(e => e.CurrencyCode).HasName("PK__Currency__408426BE3FBF9656");
 
             entity.ToTable("CurrencyDefine");
 
@@ -73,7 +77,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<FrequencyDefine>(entity =>
         {
-            entity.HasKey(e => e.FrequencyId).HasName("PK__Frequenc__592474B87F72BF11");
+            entity.HasKey(e => e.FrequencyId).HasName("PK__Frequenc__592474B8EE53F1F1");
 
             entity.ToTable("FrequencyDefine");
 
@@ -86,7 +90,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<PurposeDefine>(entity =>
         {
-            entity.HasKey(e => e.Code).HasName("PK__PurposeD__A25C5AA611FFEE46");
+            entity.HasKey(e => e.Code).HasName("PK__PurposeD__A25C5AA6E8F3EACA");
 
             entity.ToTable("PurposeDefine");
 
@@ -99,7 +103,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<Schedule>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Schedule__3214EC2755CDC485");
+            entity.HasKey(e => e.Id).HasName("PK__Schedule__3214EC274AFD1019");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.CategoryCustomId).HasColumnName("CategoryCustomID");
@@ -119,7 +123,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC27683CF0C4");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC275EBC7001");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.CategoryCustomId).HasColumnName("CategoryCustomID");
@@ -137,7 +141,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<TransactionImage>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC2754A3A854");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC279D1562BD");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.ImgSrc).HasMaxLength(2048);
@@ -146,9 +150,9 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC27CC0F4693");
+            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC27F69405EA");
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534A239DDF3").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534F2F5B872").IsUnique();
 
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("(newid())")
@@ -166,13 +170,13 @@ public partial class QuanLyChiTieuContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.NumLoginFail).HasDefaultValue(0);
+            entity.Property(e => e.NumLoginFail).HasDefaultValue(-1);
             entity.Property(e => e.Password).IsUnicode(false);
         });
 
         modelBuilder.Entity<UserCategoryCustom>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User_Cat__3214EC27B909027F");
+            entity.HasKey(e => e.Id).HasName("PK__User_Cat__3214EC270C5DF73B");
 
             entity.ToTable("User_Category_Custom");
 
@@ -180,7 +184,7 @@ public partial class QuanLyChiTieuContext : DbContext
             entity.Property(e => e.CategoryColor).HasMaxLength(20);
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
             entity.Property(e => e.CategoryName).HasMaxLength(100);
-            entity.Property(e => e.CategoryOrder).HasDefaultValue(1);
+            entity.Property(e => e.CategoryOrder).HasDefaultValue(9999);
             entity.Property(e => e.IsDefault).HasDefaultValue(false);
             entity.Property(e => e.Type)
                 .HasMaxLength(50)
@@ -190,7 +194,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<UserToken>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__UserToke__1788CCAC01C5D30F");
+            entity.HasKey(e => e.UserId).HasName("PK__UserToke__1788CCACDE8B2CEC");
 
             entity.Property(e => e.UserId)
                 .ValueGeneratedNever()
@@ -201,7 +205,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<VerifyCode>(entity =>
         {
-            entity.HasKey(e => e.Email).HasName("PK__VerifyCo__A9D10535819D2182");
+            entity.HasKey(e => e.Email).HasName("PK__VerifyCo__A9D105354B83D268");
 
             entity.ToTable("VerifyCode");
 

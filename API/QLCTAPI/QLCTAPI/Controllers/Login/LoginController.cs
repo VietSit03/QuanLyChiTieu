@@ -1,15 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using QLCTAPI.Models;
-using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
-using Newtonsoft.Json;
-using System.Net.Http;
 using QLCTAPI.DTOs;
 
 namespace QLCTAPI.Controllers.Login
@@ -54,11 +49,38 @@ namespace QLCTAPI.Controllers.Login
 
                 await _context.SaveChangesAsync();
 
+                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                };
+
+                var expireDate = DateTime.Now.AddMonths(Convert.ToInt32(_config["Jwt:ExpireMonth"]));
+
+                var token = new JwtSecurityToken(
+                    issuer: _config["Jwt:Issuer"],
+                    audience: _config["Jwt:Audience"],
+                    claims: claims,
+                    expires: DateTime.Now.AddYears(1),
+                    signingCredentials: credentials);
+
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                var newToken = new UserToken
+                {
+                    UserId = user.Id,
+                    Token = tokenString,
+                    ExpiredDate = token.ValidTo
+                };
+
                 var existedToken = await _context.UserTokens.FindAsync(user.Id);
 
                 if (existedToken != null)
                 {
-                    existedToken.ExpiredDate = DateTime.Now.AddMonths(Convert.ToInt32(_config["Jwt:RenewMonth"]));
+                    existedToken.Token = newToken.Token;
+                    existedToken.ExpiredDate = newToken.ExpiredDate;
 
                     await _context.SaveChangesAsync();
 
@@ -66,30 +88,6 @@ namespace QLCTAPI.Controllers.Login
                 }
                 else
                 {
-                    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-                    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-                    var claims = new[]
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    };
-
-                    var expireDate = DateTime.Now.AddMonths(Convert.ToInt32(_config["Jwt:ExpireMonth"]));
-
-                    var token = new JwtSecurityToken(
-                        issuer: _config["Jwt:Issuer"],
-                        audience: _config["Jwt:Audience"],
-                        claims: claims,
-                        expires: expireDate,
-                        signingCredentials: credentials);
-
-                    var newToken = new UserToken
-                    {
-                        UserId = user.Id,
-                        Token = new JwtSecurityTokenHandler().WriteToken(token),
-                        ExpiredDate = expireDate
-                    };
-
                     await _context.UserTokens.AddAsync(newToken);
 
                     await _context.SaveChangesAsync();

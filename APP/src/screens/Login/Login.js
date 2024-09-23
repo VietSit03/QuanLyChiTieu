@@ -88,7 +88,7 @@ const Login = ({ navigation }) => {
 
       console.log(apiResponse.token);
 
-      navigation.navigate("DrawerNavigator");
+      navigation.replace("DrawerNavigator");
     } catch (error) {
       console.error("Error:", error);
     }

@@ -25,6 +25,7 @@
     "quanlychitieu": "file:",
     "react": "18.2.0",
     "react-native": "0.74.5",
+    "react-native-draggable-flatlist": "^4.0.1",
     "react-native-element-dropdown": "^2.12.1",
     "react-native-image-crop-picker": "^0.41.2",
     "react-native-paper": "^5.12.5",
