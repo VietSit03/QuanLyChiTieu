@@ -35,14 +35,16 @@ public partial class QuanLyChiTieuContext : DbContext
 
     public virtual DbSet<UserToken> UserTokens { get; set; }
 
+    public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(Config.ConnectionString);
+        => optionsBuilder.UseSqlServer("Data Source=WIN-8PMB5F2TOCE;Initial Catalog=QuanLyChiTieu;User ID=sa;Password=123456;Trust Server Certificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CategoryDefine>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC27D68F43F9");
+            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC270B91401E");
 
             entity.ToTable("CategoryDefine");
 
@@ -55,7 +57,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<CurrencyDefine>(entity =>
         {
-            entity.HasKey(e => e.CurrencyCode).HasName("PK__Currency__408426BE281EDBFD");
+            entity.HasKey(e => e.CurrencyCode).HasName("PK__Currency__408426BEA9499FF2");
 
             entity.ToTable("CurrencyDefine");
 
@@ -71,7 +73,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<FrequencyDefine>(entity =>
         {
-            entity.HasKey(e => e.FrequencyId).HasName("PK__Frequenc__592474B8508E3769");
+            entity.HasKey(e => e.FrequencyId).HasName("PK__Frequenc__592474B87F72BF11");
 
             entity.ToTable("FrequencyDefine");
 
@@ -84,7 +86,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<PurposeDefine>(entity =>
         {
-            entity.HasKey(e => e.Code).HasName("PK__PurposeD__A25C5AA6464F68FE");
+            entity.HasKey(e => e.Code).HasName("PK__PurposeD__A25C5AA611FFEE46");
 
             entity.ToTable("PurposeDefine");
 
@@ -97,7 +99,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<Schedule>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Schedule__3214EC27BCE502B0");
+            entity.HasKey(e => e.Id).HasName("PK__Schedule__3214EC2755CDC485");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.CategoryCustomId).HasColumnName("CategoryCustomID");
@@ -117,7 +119,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC270D382FE2");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC27683CF0C4");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.CategoryCustomId).HasColumnName("CategoryCustomID");
@@ -135,7 +137,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<TransactionImage>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC27C0AE8E37");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC2754A3A854");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.ImgSrc).HasMaxLength(2048);
@@ -144,9 +146,9 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC2797C744F3");
+            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC27CC0F4693");
 
-            entity.HasIndex(e => e.Username, "UQ__Users__536C85E414313B42").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534A239DDF3").IsUnique();
 
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("(newid())")
@@ -157,20 +159,20 @@ public partial class QuanLyChiTieuContext : DbContext
             entity.Property(e => e.CurrencyCode)
                 .HasMaxLength(5)
                 .IsUnicode(false);
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.Email)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(false);
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.NumLoginFail).HasDefaultValue(0);
             entity.Property(e => e.Password).IsUnicode(false);
-            entity.Property(e => e.Username)
-                .HasMaxLength(50)
-                .IsUnicode(false);
         });
 
         modelBuilder.Entity<UserCategoryCustom>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User_Cat__3214EC27AE62AC9C");
+            entity.HasKey(e => e.Id).HasName("PK__User_Cat__3214EC27B909027F");
 
             entity.ToTable("User_Category_Custom");
 
@@ -188,13 +190,29 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<UserToken>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__UserToke__1788CCAC4FC09D4A");
+            entity.HasKey(e => e.UserId).HasName("PK__UserToke__1788CCAC01C5D30F");
 
             entity.Property(e => e.UserId)
                 .ValueGeneratedNever()
                 .HasColumnName("UserID");
             entity.Property(e => e.ExpiredDate).HasColumnType("datetime");
             entity.Property(e => e.Token).IsUnicode(false);
+        });
+
+        modelBuilder.Entity<VerifyCode>(entity =>
+        {
+            entity.HasKey(e => e.Email).HasName("PK__VerifyCo__A9D10535819D2182");
+
+            entity.ToTable("VerifyCode");
+
+            entity.Property(e => e.Email)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Code)
+                .HasMaxLength(12)
+                .IsUnicode(false);
+            entity.Property(e => e.ExpiredDate).HasColumnType("datetime");
+            entity.Property(e => e.IsVerify).HasDefaultValue(false);
         });
 
         OnModelCreatingPartial(modelBuilder);
