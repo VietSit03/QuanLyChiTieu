@@ -45,7 +45,7 @@ public partial class QuanLyChiTieuContext : DbContext
     {
         modelBuilder.Entity<CategoryDefine>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC2741E7D96A");
+            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC278ABE1C8A");
 
             entity.ToTable("CategoryDefine");
 
@@ -61,7 +61,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<CurrencyDefine>(entity =>
         {
-            entity.HasKey(e => e.CurrencyCode).HasName("PK__Currency__408426BE3FBF9656");
+            entity.HasKey(e => e.CurrencyCode).HasName("PK__Currency__408426BE419A37D8");
 
             entity.ToTable("CurrencyDefine");
 
@@ -77,7 +77,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<FrequencyDefine>(entity =>
         {
-            entity.HasKey(e => e.FrequencyId).HasName("PK__Frequenc__592474B8EE53F1F1");
+            entity.HasKey(e => e.FrequencyId).HasName("PK__Frequenc__592474B8F2DCF4CA");
 
             entity.ToTable("FrequencyDefine");
 
@@ -90,7 +90,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<PurposeDefine>(entity =>
         {
-            entity.HasKey(e => e.Code).HasName("PK__PurposeD__A25C5AA6E8F3EACA");
+            entity.HasKey(e => e.Code).HasName("PK__PurposeD__A25C5AA672BCECF8");
 
             entity.ToTable("PurposeDefine");
 
@@ -103,7 +103,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<Schedule>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Schedule__3214EC274AFD1019");
+            entity.HasKey(e => e.Id).HasName("PK__Schedule__3214EC277CBC00F9");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.CategoryCustomId).HasColumnName("CategoryCustomID");
@@ -123,7 +123,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC275EBC7001");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC27627E2363");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.CategoryCustomId).HasColumnName("CategoryCustomID");
@@ -133,6 +133,10 @@ public partial class QuanLyChiTieuContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Money).HasColumnType("decimal(18, 6)");
             entity.Property(e => e.Note).HasMaxLength(1024);
+            entity.Property(e => e.Status)
+                .HasMaxLength(1)
+                .IsUnicode(false)
+                .HasDefaultValue("P");
             entity.Property(e => e.Type)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -141,7 +145,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<TransactionImage>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC279D1562BD");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC271C6FDCBC");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.ImgSrc).HasMaxLength(2048);
@@ -150,9 +154,11 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC27F69405EA");
+            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC27DB938672");
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534F2F5B872").IsUnique();
+            entity.ToTable(tb => tb.HasTrigger("trg_AfterInsertUser"));
+
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D105349E772B4C").IsUnique();
 
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("(newid())")
@@ -176,7 +182,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<UserCategoryCustom>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User_Cat__3214EC270C5DF73B");
+            entity.HasKey(e => e.Id).HasName("PK__User_Cat__3214EC27154B9539");
 
             entity.ToTable("User_Category_Custom");
 
@@ -194,7 +200,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<UserToken>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__UserToke__1788CCACDE8B2CEC");
+            entity.HasKey(e => e.UserId).HasName("PK__UserToke__1788CCACF75BEDF0");
 
             entity.Property(e => e.UserId)
                 .ValueGeneratedNever()
@@ -205,7 +211,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<VerifyCode>(entity =>
         {
-            entity.HasKey(e => e.Email).HasName("PK__VerifyCo__A9D105354B83D268");
+            entity.HasKey(e => e.Email).HasName("PK__VerifyCo__A9D10535E2BD7233");
 
             entity.ToTable("VerifyCode");
 

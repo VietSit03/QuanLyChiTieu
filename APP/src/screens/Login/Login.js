@@ -85,8 +85,10 @@ const Login = ({ navigation }) => {
       }
 
       await AsyncStorage.setItem("token", apiResponse.token);
+      await AsyncStorage.setItem("currencyBase", apiResponse.data.currencyCode);
 
       console.log(apiResponse.token);
+      console.log(apiResponse.data.currencyCode);
 
       navigation.replace("DrawerNavigator");
     } catch (error) {

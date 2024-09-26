@@ -28,8 +28,9 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
         public async Task<ActionResult> GetTopCategoryCustom([FromQuery] string type, [FromQuery] int num)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var listCategory = await _context.UserCategoryCustoms.Where(ucc => (ucc.UserId.Equals(userID) || (bool)ucc.IsDefault) && ucc.Type.Equals(type))
+            if (Guid.TryParse(userID, out var id))
+            {
+                var listCategory = await _context.UserCategoryCustoms.Where(ucc => (ucc.UserId.Equals(id) || (bool)ucc.IsDefault) && ucc.Type.Equals(type))
                 .Join(_context.CategoryDefines,
                 ucc => ucc.CategoryId,
                 cd => cd.Id,
@@ -45,7 +46,10 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
                 })
                 .Take(num).ToListAsync();
 
-            return Ok(new Response { ErrorCode = ErrorCode.GETDATASUCCESS, Data = listCategory });
+                return Ok(new Response { ErrorCode = ErrorCode.GETDATASUCCESS, Data = listCategory });
+            }
+
+            return BadRequest(new Response { ErrorCode = ErrorCode.ERROR });
         }
 
         [HttpGet("GetAll")]

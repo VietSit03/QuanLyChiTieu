@@ -17,6 +17,7 @@ import Register from "../screens/Login/Register";
 import ForgetPassword from "../screens/Login/ForgetPassword";
 import ChangePassword from "../screens/Login/ChangePassword";
 import { DrawerNavigator } from "../component/Button";
+import ListCategory from "../screens/Category/ListCategory";
 
 const Stack = createStackNavigator();
 
@@ -120,6 +121,11 @@ function StackNavigator({ navigation }) {
         name="ChangePassword"
         component={ChangePassword}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ListCategory"
+        component={ListCategory}
+        options={{ title: "Danh sách danh mục" }}
       />
     </Stack.Navigator>
   );

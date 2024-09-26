@@ -31,16 +31,16 @@ namespace QLCTAPI.Controllers.Login
 
             if (user == null)
             {
-                return BadRequest(new LoginResponse(ErrorCode.NOTFOUND, string.Empty));
+                return BadRequest(new LoginResponse { ErrorCode = ErrorCode.NOTFOUND });
             }
 
             if (!(bool)user.IsActive)
             {
                 if (user.NumLoginFail == -1)
                 {
-                    return BadRequest(new LoginResponse(ErrorCode.NOTACTIVATEUSER, string.Empty));
+                    return BadRequest(new LoginResponse { ErrorCode = ErrorCode.NOTACTIVATEUSER });
                 }
-                return BadRequest(new LoginResponse(ErrorCode.DISABLEDUSER, string.Empty));
+                return BadRequest(new LoginResponse { ErrorCode = ErrorCode.DISABLEDUSER });
             }
 
             if (BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
@@ -84,7 +84,17 @@ namespace QLCTAPI.Controllers.Login
 
                     await _context.SaveChangesAsync();
 
-                    return Ok(new LoginResponse(ErrorCode.GETDATASUCCESS, existedToken.Token));
+                    return Ok(new LoginResponse
+                    {
+                        ErrorCode = ErrorCode.GETDATASUCCESS,
+                        Token = existedToken.Token,
+                        Data = new UserDTO
+                        {
+                            Id = user.Id,
+                            Name = user.Name,
+                            CurrencyCode = user.CurrencyCode,
+                        }
+                    });
                 }
                 else
                 {
@@ -92,7 +102,17 @@ namespace QLCTAPI.Controllers.Login
 
                     await _context.SaveChangesAsync();
 
-                    return Ok(new LoginResponse(ErrorCode.GETDATASUCCESS, newToken.Token));
+                    return Ok(new LoginResponse
+                    {
+                        ErrorCode = ErrorCode.GETDATASUCCESS,
+                        Token = newToken.Token,
+                        Data = new UserDTO
+                        {
+                            Id = user.Id,
+                            Name = user.Name,
+                            CurrencyCode = user.CurrencyCode,
+                        }
+                    });
                 }
             }
             else
@@ -106,7 +126,7 @@ namespace QLCTAPI.Controllers.Login
 
                 await _context.SaveChangesAsync();
 
-                return BadRequest(new LoginResponse(ErrorCode.NOTFOUND, string.Empty));
+                return BadRequest(new LoginResponse { ErrorCode = ErrorCode.NOTFOUND });
             }
         }
 

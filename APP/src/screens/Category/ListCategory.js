@@ -1,8 +1,6 @@
 import {
-  ActivityIndicator,
   FlatList,
   Image,
-  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -12,21 +10,15 @@ import {
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ThemeContext } from "../../Theme";
-import { LoadingAction, LoadingPage } from "../../component/Loading";
+import { LoadingPage } from "../../component/Loading";
 import { API_URL } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import DraggableFlatList from "react-native-draggable-flatlist";
 import { useFocusEffect } from "@react-navigation/native";
 import { alert } from "../../common";
 
-const CategoryScreen = ({
-  type,
-  isDragEnabled,
-  setIsDragEnabled,
-  navigation,
-}) => {
+const ListCategory = ({ route, navigation }) => {
+  const { type } = route.params;
   const [loadingPage, setLoadingPage] = useState(true);
-  const [loadingAction, setLoadingAction] = useState(false);
   const { themeColors } = useContext(ThemeContext);
   const [category, setCategory] = useState();
 
@@ -104,78 +96,7 @@ const CategoryScreen = ({
     }, [])
   );
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
-  const [selectedItem, setSelectedItem] = useState(null);
-
-  const handleLongPress = (item, event) => {
-    const { pageX, pageY } = event.nativeEvent;
-    setModalPosition({ x: pageX, y: pageY });
-    setSelectedItem(item);
-    setModalVisible(true);
-  };
-
-  const handleEditItem = () => {
-    setIsDragEnabled((prev) => !prev);
-    setModalVisible(false);
-  };
-
-  const deleteCategory = async () => {
-    setLoadingAction(true);
-    const token = await AsyncStorage.getItem("token");
-    var url = `${API_URL}/CustomCategory/Delete?id=${selectedItem.id}`;
-
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          alert(
-            "Hết hạn đăng nhập",
-            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
-            () => navigation.navigate("Login")
-          );
-          await AsyncStorage.setItem("token", "");
-        } else {
-          var apiResponse = await response.json();
-          if (apiResponse.errorCode === "#0008") {
-            alert(
-              "Thao tác thất bại",
-              "Xoá danh mục thất bại. Vui lòng thử lại sau"
-            );
-          } else if (apiResponse.errorCode === "#1011") {
-            alert("Thao tác thất bại", "Bạn không thể xoá danh mục mặc định.");
-          }
-        }
-        setLoadingAction(false);
-        return;
-      }
-
-      alert("Xoá thành công", "Xoá danh mục thành công.");
-
-      setLoadingAction(false);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
-  const handleDeleteItem = () => {
-    async function delCategory() {
-      await deleteCategory();
-      await fetchCategory();
-    }
-
-    setModalVisible(false);
-    delCategory();
-  };
-
-  const Category = ({ item, drag }) => {
+  const Category = ({ item }) => {
     if (item.empty) {
       return <View style={{ width: 70, height: 60 }} />;
     }
@@ -215,9 +136,7 @@ const CategoryScreen = ({
                 justifyContent: "center",
                 alignItems: "center",
               }}
-              onLongPress={
-                isDragEnabled ? drag : (event) => handleLongPress(item, event)
-              }
+              onPress={() => navigation.navigate("AddTransaction", {type: type, category: item})}
             >
               <Image
                 source={{ uri: item.imgSrc }}
@@ -237,7 +156,7 @@ const CategoryScreen = ({
     );
   };
 
-  const renderRow = ({ item, drag }) => {
+  const renderRow = ({ item }) => {
     return (
       <View
         style={{
@@ -247,9 +166,7 @@ const CategoryScreen = ({
         }}
       >
         {item.map((category, index) => {
-          return (
-            <Category key={index.toString()} item={category} drag={drag} />
-          );
+          return <Category key={index.toString()} item={category} />;
         })}
       </View>
     );
@@ -261,71 +178,19 @@ const CategoryScreen = ({
         <LoadingPage />
       ) : (
         <View style={{ flex: 1, padding: 20 }}>
-          {loadingAction && <LoadingAction />}
-          {isDragEnabled ? (
-            <DraggableFlatList
-              data={chunkArray(category, 4)}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={renderRow}
-              scrollEnabled={true}
-              onDragEnd={({ data }) => {
-                setCategory(data);
-              }}
-              onTouchStart={(data) => {
-                console.log(data);
-              }}
-            />
-          ) : (
-            <FlatList
-              data={chunkArray(category, 3)}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={renderRow}
-              scrollEnabled={true}
-            />
-          )}
-
-          {modalVisible && (
-            <Modal
-              transparent={true}
-              animationType="fade"
-              visible={modalVisible}
-              onRequestClose={() => setModalVisible(false)}
-              statusBarTranslucent={true}
-            >
-              <TouchableOpacity
-                style={styles.overlay}
-                activeOpacity={1}
-                onPress={() => setModalVisible(false)}
-              >
-                <View
-                  style={[
-                    styles.modalView,
-                    { top: modalPosition.y, left: modalPosition.x - 50 },
-                  ]}
-                >
-                  <TouchableOpacity
-                    style={styles.modalButton}
-                    onPress={handleEditItem}
-                  >
-                    <Text>Đổi thứ tự</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.modalButton}
-                    onPress={handleDeleteItem}
-                  >
-                    <Text>Xoá</Text>
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            </Modal>
-          )}
+          <FlatList
+            data={chunkArray(category, 3)}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={renderRow}
+            scrollEnabled={true}
+          />
         </View>
       )}
     </>
   );
 };
 
-export default CategoryScreen;
+export default ListCategory;
 
 const styles = StyleSheet.create({
   overlay: {

@@ -10,6 +10,7 @@ import {
   View,
   Modal,
   TouchableWithoutFeedback,
+  Pressable,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -17,6 +18,12 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { ThemeContext } from "../../Theme";
 import * as ImagePicker from "expo-image-picker";
 import { Dropdown } from "react-native-element-dropdown";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL, IMGUR_CLIENID } from "@env";
+import { LoadingAction, LoadingPage } from "../../component/Loading";
+import * as FileSystem from "expo-file-system";
+import { alert } from "../../common";
+import * as ImageManipulator from "expo-image-manipulator";
 
 const Cur = React.memo(
   ({ item, handle }) => {
@@ -40,95 +47,23 @@ const Cur = React.memo(
     prevProps.item.currencyCode === nextProps.item.currencyCode
 );
 
-const currency = [
-  { currencyName: "Đô la Mỹ", currencyCode: "USD" },
-  { currencyName: "Euro", currencyCode: "EUR" },
-  { currencyName: "Đồng Việt Nam", currencyCode: "VND" },
-  { currencyName: "Bảng Anh", currencyCode: "GBP" },
-  { currencyName: "Yên Nhật", currencyCode: "JPY" },
-  { currencyName: "Đô la Úc", currencyCode: "AUD" },
-  { currencyName: "Đô la Canada", currencyCode: "CAD" },
-  { currencyName: "Franc Thụy Sĩ", currencyCode: "CHF" },
-  { currencyName: "Nhân dân tệ Trung Quốc", currencyCode: "CNY" },
-  { currencyName: "Krona Thụy Điển", currencyCode: "SEK" },
-  { currencyName: "Đô la New Zealand", currencyCode: "NZD" },
-  { currencyName: "Peso Mexico", currencyCode: "MXN" },
-  { currencyName: "Đô la Singapore", currencyCode: "SGD" },
-  { currencyName: "Đô la Hồng Kông", currencyCode: "HKD" },
-  { currencyName: "Krone Na Uy", currencyCode: "NOK" },
-  { currencyName: "Won Hàn Quốc", currencyCode: "KRW" },
-  { currencyName: "Lira Thổ Nhĩ Kỳ", currencyCode: "TRY" },
-  { currencyName: "Rúp Nga", currencyCode: "RUB" },
-  { currencyName: "Rupee Ấn Độ", currencyCode: "INR" },
-  { currencyName: "Real Brazil", currencyCode: "BRL" },
-  { currencyName: "Rand Nam Phi", currencyCode: "ZAR" },
-  { currencyName: "Krone Đan Mạch", currencyCode: "DKK" },
-  { currencyName: "Baht Thái", currencyCode: "THB" },
-  { currencyName: "Ringgit Malaysia", currencyCode: "MYR" },
-  { currencyName: "Rupiah Indonesia", currencyCode: "IDR" },
-];
-
-const AddTransaction = ({ route, navigation }) => {
-  const { type } = route.params;
-  const { themeColors } = useContext(ThemeContext);
-  const [loadingPage, setLoadingPage] = useState(true);
-  const [moneyBaseInput, setMoneyBaseInput] = useState("0");
-  const [moneyInput, setMoneyInput] = useState("0");
-  const [curBase, setCurBase] = useState();
-  const [selectedCur, setSelectedCur] = useState();
-  const [isFocusedNote, setIsFocusedNote] = useState(false);
-
-  useEffect(() => {
-    async function fetchData() {
-      setLoadingPage(false);
-      setCurBase(currency[2]);
-      setSelectedCur(currency[10]);
-    }
-
-    fetchData();
-  }, []);
-  useEffect(() => {
-    setMoneyBaseInput(moneyInput * 2);
-  }, [moneyInput]);
-
-  const data = Array.from({ length: 5 }, (_, index) => ({ id: index + 1 }));
-
-  const chunkArray = (arr, chunkSize) => {
-    const result = [];
-    for (let i = 0; i < arr.length; i += chunkSize) {
-      result.push(arr.slice(i, i + chunkSize));
-    }
-
-    // Adding the special category
-    const specialCategory = { id: "special", isSpecial: true };
-
-    // If the last row has space for more items, push the special category there.
-    if (result[result.length - 1].length < chunkSize) {
-      result[result.length - 1].push(specialCategory);
-    } else {
-      // Otherwise, create a new row for the special category.
-      result.push([specialCategory]);
-    }
-
-    // Add empty placeholders to the last row if needed
-    const lastRow = result[result.length - 1];
-    while (lastRow.length < chunkSize) {
-      lastRow.push({ id: `empty-${lastRow.length}`, empty: true });
-    }
-
-    return result;
-  };
-
-  const rows = chunkArray(data, 3);
-
-  const Category = ({ item }) => {
+const Category = React.memo(
+  ({ item, handle, selectedCategory, themeColors, navigation, type }) => {
     if (item.empty) {
-      return <View style={{ width: 70, height: 60 }} />;
+      return <View style={{ width: 110, height: 110 }} />;
     }
     return (
       <>
         {item.isSpecial ? (
-          <View style={{ alignItems: "center", width: 70 }}>
+          <View
+            style={{
+              alignItems: "center",
+              width: 110,
+              height: 100,
+              paddingHorizontal: 5,
+              paddingVertical: 15,
+            }}
+          >
             <TouchableOpacity
               style={{
                 height: 60,
@@ -139,13 +74,13 @@ const AddTransaction = ({ route, navigation }) => {
                 alignItems: "center",
               }}
               onPress={() =>
-                navigation.navigate("CategoryScreen", { type: type })
+                navigation.navigate("ListCategory", { type: type })
               }
             >
               <Ionicons name="add-outline" size={40} color="white" />
             </TouchableOpacity>
             <Text
-              numberOfLines={2}
+              numberOfLines={1}
               ellipsizeMode="tail"
               style={{ marginTop: 2 }}
             >
@@ -153,34 +88,242 @@ const AddTransaction = ({ route, navigation }) => {
             </Text>
           </View>
         ) : (
-          <View style={{ alignItems: "center", width: 70 }}>
-            <TouchableOpacity
+          <View
+            style={{
+              alignItems: "center",
+              width: 110,
+              height: 110,
+              justifyContent: "center",
+              backgroundColor:
+                item.id == selectedCategory.id ? item.color : "transparent",
+              borderRadius: 15,
+              padding: 5,
+            }}
+          >
+            <Pressable
               style={{
-                height: 60,
-                width: 60,
-                borderRadius: 30,
-                backgroundColor: "purple",
-                justifyContent: "center",
                 alignItems: "center",
               }}
+              onPress={handle}
             >
-              <Image
-                source={{ uri: "https://imgur.com/b0SG0aW.png" }}
-                style={{ width: 40, height: 40 }}
-              />
-            </TouchableOpacity>
-            <Text
-              numberOfLines={2}
-              ellipsizeMode="tail"
-              style={{ marginTop: 2 }}
-            >
-              Category {item.id}
-            </Text>
+              <View
+                style={{
+                  height: 60,
+                  width: 60,
+                  borderRadius: 30,
+                  backgroundColor: item.color,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  source={{ uri: item.imgSrc }}
+                  style={{ width: 40, height: 40 }}
+                />
+              </View>
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ marginTop: 2 }}
+              >
+                {item.name}
+              </Text>
+            </Pressable>
           </View>
         )}
       </>
     );
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.selectedCategory.id !== prevProps.item.id &&
+      nextProps.selectedCategory.id !== prevProps.item.id
+    );
+  }
+);
+
+const AddTransaction = ({ route, navigation }) => {
+  const { type } = route.params;
+  const { themeColors } = useContext(ThemeContext);
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [loadingAction, setLoadingAction] = useState(false);
+  const [moneyBaseInput, setMoneyBaseInput] = useState("0");
+  const [moneyInput, setMoneyInput] = useState("0");
+  const [currency, setCurrency] = useState();
+  const [curBase, setCurBase] = useState();
+  const [selectedCur, setSelectedCur] = useState();
+  const [isFocusedNote, setIsFocusedNote] = useState(false);
+  const [category, setCategory] = useState();
+  const [selectedCategory, setSelectedCategory] = useState({ id: -1 });
+
+  useEffect(() => {
+    async function fetchData() {
+      await fetchCurrency();
+      await fetchCategory();
+      setLoadingPage(false);
+    }
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (route.params?.category) {
+      var ctg = route.params?.category;
+      setCategory((prevCategory) => [ctg, ...prevCategory]);
+      setSelectedCategory(ctg);
+      return;
+    }
+  }, [route.params]);
+
+  useEffect(() => {
+    async function fetchExchange() {
+      await fetchExchangeCurrency();
+    }
+
+    if (selectedCur != curBase) {
+      fetchExchange();
+    }
+  }, [moneyInput]);
+
+  const fetchCurrency = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/Currency/GetAll`;
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        return;
+      }
+
+      var apiResponse = await response.json();
+      var currencies = apiResponse.data;
+      var curCodeBase = await AsyncStorage.getItem("currencyBase");
+      var curBase = currencies.find(
+        (currency) => currency.currencyCode === curCodeBase
+      );
+
+      setCurrency(currencies);
+      setCurBase(curBase);
+      setSelectedCur(curBase);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
+
+  const fetchExchangeCurrency = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/Currency/ExchangeCurrency`;
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          money: moneyInput,
+          fromCurrencyCode: selectedCur.currencyCode,
+          toCurrencyCode: curBase.currencyCode,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        return;
+      }
+
+      var apiResponse = await response.json();
+
+      setMoneyBaseInput(apiResponse.data.toMoney);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const fetchCategory = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/CustomCategory/GetTop?num=8&type=${type}`;
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        return;
+      }
+
+      var apiResponse = await response.json();
+
+      setCategory(apiResponse.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const data = Array.from({ length: 5 }, (_, index) => ({ id: index + 1 }));
+
+  const chunkArray = (arr, chunkSize) => {
+    const result = [];
+    for (let i = 0; i < arr.length; i += chunkSize) {
+      result.push(arr.slice(i, i + chunkSize));
+    }
+
+    const specialCategory = { id: "special", isSpecial: true };
+
+    if (result[result.length - 1].length < chunkSize) {
+      result[result.length - 1].push(specialCategory);
+    } else {
+      result.push([specialCategory]);
+    }
+
+    const lastRow = result[result.length - 1];
+    while (lastRow.length < chunkSize) {
+      lastRow.push({ id: `empty-${lastRow.length}`, empty: true });
+    }
+
+    return result;
+  };
+
+  const rows = chunkArray(data, 3);
 
   const renderCategory = ({ item }) => {
     return (
@@ -192,7 +335,17 @@ const AddTransaction = ({ route, navigation }) => {
         }}
       >
         {item.map((category) => {
-          return <Category key={category.id} item={category} />;
+          return (
+            <Category
+              key={category.id}
+              item={category}
+              handle={() => setSelectedCategory(category)}
+              selectedCategory={selectedCategory}
+              themeColors={themeColors}
+              navigation={navigation}
+              type={type}
+            />
+          );
         })}
       </View>
     );
@@ -238,7 +391,10 @@ const AddTransaction = ({ route, navigation }) => {
 
   const [note, setNote] = useState("");
 
+  const [imagesBase64, setImagesBase64] = useState([]);
   const [images, setImages] = useState([]);
+  const [imgSrc, setImgSrc] = useState([]);
+  const [isUpload, setIsUpload] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
@@ -263,6 +419,26 @@ const AddTransaction = ({ route, navigation }) => {
     });
 
     if (!result.canceled) {
+      const base64Images = await Promise.all(
+        result.assets.map(async (asset) => {
+          const manipulatedResult = await ImageManipulator.manipulateAsync(
+            asset.uri,
+            [{ resize: { width: 700 } }],
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+          );
+
+          const base64 = await FileSystem.readAsStringAsync(
+            manipulatedResult.uri,
+            {
+              encoding: FileSystem.EncodingType.Base64,
+            }
+          );
+          return base64;
+        })
+      );
+
+      setImagesBase64([...imagesBase64, ...base64Images]);
+
       const selectedImages = result.assets.map((asset) => asset.uri);
       setImages([...images, ...selectedImages]);
     }
@@ -282,14 +458,34 @@ const AddTransaction = ({ route, navigation }) => {
     });
 
     if (!result.canceled) {
-      setImages([...images, result.assets[0].uri]);
+      const photoUri = result.assets[0].uri;
+      const manipulatedResult = await ImageManipulator.manipulateAsync(
+        photoUri,
+        [{ resize: { width: 700 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      const base64Image = await FileSystem.readAsStringAsync(
+        manipulatedResult.uri,
+        {
+          encoding: FileSystem.EncodingType.Base64,
+        }
+      );
+      setImages([...images, photoUri]);
+      setImagesBase64([...imagesBase64, base64Image]);
     }
 
     setModalVisible(false);
   };
 
   const removeImage = (uri) => {
-    setImages(images.filter((image) => image !== uri));
+    const index = images.indexOf(uri);
+
+    if (index > -1) {
+      setImages(images.filter((image, i) => i !== index));
+
+      setImagesBase64(imagesBase64.filter((_, i) => i !== index));
+    }
   };
 
   const handleSelectCur = (item) => {
@@ -300,13 +496,117 @@ const AddTransaction = ({ route, navigation }) => {
     return <Cur item={item} handle={() => handleSelectCur(item)} />;
   };
 
+  const handleAddTrans = async () => {
+    setLoadingAction(true);
+
+    const uploadImages = async () => {
+      for (const base64Image of imagesBase64) {
+        if (!(await uploadImage(base64Image))) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    if (!(await uploadImages())) {
+      alert("Lỗi ảnh", "Xảy ra lỗi khi lưu ảnh, vui lòng thử lại.");
+      setLoadingAction(false);
+      return;
+    }
+
+    setIsUpload(true);
+  };
+
+  useEffect(() => {
+    if (isUpload) {
+      async function add() {
+        await fetchAddTrans();
+        setLoadingAction(false);
+      }
+      add();
+    }
+  }, [isUpload, imgSrc]);
+
+  const fetchAddTrans = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/Transaction/Add`;
+    const categoryId = parseInt(selectedCategory.id);
+    const money = parseFloat(moneyBaseInput);
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          categoryId: categoryId,
+          type: type,
+          money: money,
+          currencyCode: curBase.currencyCode,
+          createAt: new Date(time).toISOString(),
+          note: note,
+          imgSrc: imgSrc,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        alert("Lỗi", "Xảy ra lỗi khi thêm giao dịch. Vui lòng thử lại sau.");
+        return;
+      }
+
+      alert("Thành công", "Thêm giao dịch thành công.", () =>
+        navigation.navigate("Home")
+      );
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const uploadImage = async (base64Image) => {
+    setLoadingAction(true);
+    try {
+      const response = await fetch("https://api.imgur.com/3/image", {
+        method: "POST",
+        headers: {
+          Authorization: `Client-ID ${IMGUR_CLIENID}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image: base64Image }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setImgSrc((prevImgSrc) => [...prevImgSrc, result.data.link]);
+        console.log("Upload thành công", result.data.link);
+        return true;
+      } else {
+        console.log("Upload thất bại", result.data.error);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
+
   return (
     <>
       {loadingPage ? (
-        <ActivityIndicator style={{ marginTop: 10 }} size={"large"} />
+        <LoadingPage />
       ) : (
         <View style={styles.container}>
           <ScrollView style={styles.sc}>
+            {loadingAction && <LoadingAction />}
             {curBase == selectedCur ? (
               <View style={{ ...styles.head, flexDirection: "row" }}>
                 <TextInput
@@ -357,14 +657,6 @@ const AddTransaction = ({ route, navigation }) => {
                   }}
                   renderItem={renderCur}
                 />
-                {/* <Text
-                  style={{
-                    ...styles.cur,
-                    color: themeColors.primaryColorDark,
-                  }}
-                >
-                  {selectedCur.currencyCode}
-                </Text> */}
               </View>
             ) : (
               <View style={styles.exchangeMoney}>
@@ -429,7 +721,9 @@ const AddTransaction = ({ route, navigation }) => {
                   >
                     =
                   </Text>
-                  <Text style={styles.moneyBaseInput}>{moneyBaseInput}</Text>
+                  <Text style={styles.moneyBaseInput}>
+                    {moneyBaseInput.toLocaleString("en-US")}
+                  </Text>
                   <Text
                     style={{
                       ...styles.cur,
@@ -445,7 +739,7 @@ const AddTransaction = ({ route, navigation }) => {
               <Text style={styles.lbl}>Danh mục</Text>
               <FlatList
                 style={{ marginTop: 10 }}
-                data={rows}
+                data={chunkArray(category, 3)}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={renderCategory}
                 scrollEnabled={false}
@@ -567,16 +861,16 @@ const AddTransaction = ({ route, navigation }) => {
                 horizontal
               />
             </View>
-            <View style={{ backgroundColor: "transparent", height: 70 }}></View>
+            <View style={styles.btnSelect}>
+              <TouchableOpacity
+                style={styles.btnSelectActive}
+                // disabled={selectedCategory.id == -1}
+                onPress={() => handleAddTrans()}
+              >
+                <Text>Thêm</Text>
+              </TouchableOpacity>
+            </View>
           </ScrollView>
-          <View style={styles.btnSelect}>
-            <TouchableOpacity
-              style={styles.btnSelectActive}
-              // disabled={selectedCategory.id == -1}
-            >
-              <Text>Thêm</Text>
-            </TouchableOpacity>
-          </View>
           {isModalVisible && <View style={styles.bgModal} />}
         </View>
       )}
@@ -681,10 +975,7 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   btnSelect: {
-    position: "absolute",
-    bottom: 10,
-    left: 0,
-    right: 0,
+    marginBottom: 20,
     alignItems: "center",
     justifyContent: "center",
   },

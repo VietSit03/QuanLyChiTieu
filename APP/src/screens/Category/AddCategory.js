@@ -61,7 +61,7 @@ const Color = React.memo(
 );
 
 const Icon = React.memo(
-  ({ item, handle, selectedColor, selectedIcon, themeColors }) => {
+  ({ item, handle, selectedColor, selectedIcon, themeColors, navigation, type }) => {
     var size = screenWidth / 6;
     if (item.empty) {
       return <View style={{ width: size + 20, height: size + 20 }} />;
@@ -189,6 +189,8 @@ const AddCategory = ({ navigation, route }) => {
               selectedColor={selectedColor}
               selectedIcon={selectedIcon}
               themeColors={themeColors}
+              navigation={navigation}
+              type={type}
             />
           );
         })}
