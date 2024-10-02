@@ -29,6 +29,7 @@
         public static string NOTEXISTEDUSER = "#1009";
         public static string NOTACTIVATEUSER = "#1010";
         public static string NOTPERMISSION = "#1011";
+        public static string INCORRECTFORMAT = "#1013";
 
         public static string SENDMAILSUCCESS = "#2001";
         public static string SENDMAILFAIL = "#2002";

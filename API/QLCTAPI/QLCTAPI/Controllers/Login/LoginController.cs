@@ -75,6 +75,8 @@ namespace QLCTAPI.Controllers.Login
                     ExpiredDate = token.ValidTo
                 };
 
+                var currency = await _context.CurrencyDefines.FindAsync(user.CurrencyCode);
+
                 var existedToken = await _context.UserTokens.FindAsync(user.Id);
 
                 if (existedToken != null)
@@ -93,6 +95,7 @@ namespace QLCTAPI.Controllers.Login
                             Id = user.Id,
                             Name = user.Name,
                             CurrencyCode = user.CurrencyCode,
+                            CurrencySymbol = currency.Symbol,
                         }
                     });
                 }
@@ -111,6 +114,7 @@ namespace QLCTAPI.Controllers.Login
                             Id = user.Id,
                             Name = user.Name,
                             CurrencyCode = user.CurrencyCode,
+                            CurrencySymbol = currency.Symbol,
                         }
                     });
                 }

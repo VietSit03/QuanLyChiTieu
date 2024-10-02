@@ -377,13 +377,29 @@ const AddTransaction = ({ route, navigation }) => {
   const onChange = (event, selectedDate) => {
     setShowDTP(false);
     if (event.type === "dismissed") {
-      setDate(null);
+      return;
     } else {
-      setDate(selectedDate);
       if (mode === "date") {
+        setTime(selectedDate);
         setMode("time");
         setShowDTP(true);
       } else {
+        const selectedDateObject = new Date(selectedDate);
+
+        const day = time.getDate();
+        const month = time.getMonth();
+        const year = time.getFullYear();
+
+        const hours = selectedDateObject.getHours();
+        const minutes = selectedDateObject.getMinutes();
+        const seconds = selectedDateObject.getSeconds();
+
+        const finalDate = new Date(year, month, day, hours, minutes, seconds);
+
+        console.log(finalDate);
+
+        setTime(finalDate);
+
         setMode("date");
       }
     }
@@ -545,7 +561,7 @@ const AddTransaction = ({ route, navigation }) => {
           type: type,
           money: money,
           currencyCode: curBase.currencyCode,
-          createAt: new Date(time).toISOString(),
+          createAt: new Date(time),
           note: note,
           imgSrc: imgSrc,
         }),
@@ -566,7 +582,7 @@ const AddTransaction = ({ route, navigation }) => {
       }
 
       alert("Thành công", "Thêm giao dịch thành công.", () =>
-        navigation.navigate("Home")
+        navigation.replace("Home")
       );
     } catch (error) {
       console.error("Error:", error);
@@ -750,12 +766,12 @@ const AddTransaction = ({ route, navigation }) => {
               <TouchableOpacity
                 style={styles.content}
                 onPress={() => {
-                  setDate(new Date());
+                  setTime(new Date());
                   setShowDTP(true);
                 }}
               >
-                {date ? (
-                  <Text>{date.toLocaleString()}</Text>
+                {time ? (
+                  <Text>{time.toLocaleString()}</Text>
                 ) : (
                   <Text
                     style={{

@@ -18,6 +18,8 @@ import ForgetPassword from "../screens/Login/ForgetPassword";
 import ChangePassword from "../screens/Login/ChangePassword";
 import { DrawerNavigator } from "../component/Button";
 import ListCategory from "../screens/Category/ListCategory";
+import ListByCategory from "../screens/Transaction/ListByCategory";
+import TransactionDetail from "../screens/Transaction/TransactionDetail";
 
 const Stack = createStackNavigator();
 
@@ -126,6 +128,16 @@ function StackNavigator({ navigation }) {
         name="ListCategory"
         component={ListCategory}
         options={{ title: "Danh sách danh mục" }}
+      />
+      <Stack.Screen
+        name="ListByCategory"
+        component={ListByCategory}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="TransactionDetail"
+        component={TransactionDetail}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
