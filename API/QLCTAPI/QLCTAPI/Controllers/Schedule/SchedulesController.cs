@@ -171,7 +171,7 @@ namespace QLCTAPI.Controllers.Schedule
             }
         }
 
-        [HttpPut("toggle-active")]
+        [HttpPut("toggleactive")]
         [CustomAuthorize]
         public async Task<ActionResult> ChangeActive([FromQuery] int id)
         {

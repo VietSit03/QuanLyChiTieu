@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace QLCTAPI.Controllers.User
 {
-    [Route("Users/")]
+    [Route("users/")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -18,7 +18,7 @@ namespace QLCTAPI.Controllers.User
             _context = context;
         }
 
-        [HttpGet("CheckExistedEmail")]
+        [HttpGet("checkexistedemail")]
         public async Task<ActionResult> CheckExistedEmail(string email)
         {
             var user = await _context.Users.Where(u => u.Email.Equals(email)).FirstOrDefaultAsync();
@@ -31,7 +31,7 @@ namespace QLCTAPI.Controllers.User
             return Ok(new { ErrorCode = ErrorCode.EXISTEDEMAIL });
         }
 
-        [HttpGet("ActiveUser")]
+        [HttpGet("activeuser")]
         public async Task<ActionResult> ActiveUser(string email)
         {
             var user = await _context.Users.Where(u => u.Email.Equals(email)).FirstOrDefaultAsync();
@@ -56,7 +56,7 @@ namespace QLCTAPI.Controllers.User
             return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS, Message = "Kích hoạt tài khoản thành công, quay lại ứng dụng để tiếp tục" });
         }
 
-        [HttpPut("change-currency")]
+        [HttpPut("changecurrency")]
         public async Task<ActionResult> ChangeCurrency([FromQuery] string code)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);

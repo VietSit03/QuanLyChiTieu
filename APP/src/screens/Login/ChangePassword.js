@@ -35,7 +35,7 @@ const ChangePassword = ({ navigation }) => {
     setIsLoadingAction(true);
     var email = await AsyncStorage.getItem("email");
     var hashedPassword = encrypt(password.value);
-    const url = `${API_URL}/ChangePassword`;
+    const url = `${API_URL}/changepassword`;
 
     try {
       const response = await fetch(url, {

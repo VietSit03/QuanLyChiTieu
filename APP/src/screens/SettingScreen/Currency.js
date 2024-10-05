@@ -51,7 +51,7 @@ const Currency = ({ navigation }) => {
 
   const fetchCurrency = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Currency/GetAll`;
+    const url = `${API_URL}/currencies/all`;
 
     try {
       const response = await fetch(url, {
@@ -86,7 +86,7 @@ const Currency = ({ navigation }) => {
 
   const fetchChangeCurrency = async (currencyCode) => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Users/change-currency?code=${currencyCode}`;
+    const url = `${API_URL}/users/changecurrency?code=${currencyCode}`;
 
     try {
       const response = await fetch(url, {

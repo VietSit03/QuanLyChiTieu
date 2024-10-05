@@ -80,7 +80,7 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.CREATEDATAFAIL });
         }
 
-        [HttpGet("get-summary-by-type")]
+        [HttpGet("getsummarybytype")]
         public async Task<ActionResult> GetSummaryByType([FromQuery] string type)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -130,7 +130,7 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.GETDATAFAIL });
         }
 
-        [HttpGet("get-summary-by-category")]
+        [HttpGet("getsummarybycategory")]
         public async Task<ActionResult> GetSummaryByCategory([FromQuery] string type, [FromQuery] int categoryId)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -179,7 +179,7 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.GETDATAFAIL });
         }
 
-        [HttpGet("get-list-by-time")]
+        [HttpGet("getlistbytime")]
         public async Task<ActionResult> GetListByTime([FromQuery] string type, [FromQuery] int categoryId, [FromQuery] string time)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -244,7 +244,7 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.GETDATAFAIL });
         }
 
-        [HttpGet("get-list-by-money")]
+        [HttpGet("getlistbymoney")]
         public async Task<ActionResult> GetListByMoney([FromQuery] string type, [FromQuery] int categoryId)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);

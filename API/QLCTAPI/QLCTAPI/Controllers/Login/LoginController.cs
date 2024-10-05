@@ -24,7 +24,7 @@ namespace QLCTAPI.Controllers.Login
             _httpClient = httpClient;
         }
 
-        [HttpPost("Login")]
+        [HttpPost("login")]
         public async Task<ActionResult> Login([FromBody] LoginRequest request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
@@ -134,7 +134,7 @@ namespace QLCTAPI.Controllers.Login
             }
         }
 
-        [HttpPost("Register")]
+        [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] RegisterRequest request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
@@ -168,7 +168,7 @@ namespace QLCTAPI.Controllers.Login
             return Ok(new RegisterResponse(ErrorCode.CREATEDATASUCCESS));
         }
 
-        [HttpPost("ChangePassword")]
+        [HttpPost("changepassword")]
         public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
@@ -186,7 +186,7 @@ namespace QLCTAPI.Controllers.Login
         }
 
         [CustomAuthorize]
-        [HttpPost("Logout")]
+        [HttpPost("logout")]
         public async Task<ActionResult> Logout()
         {
             var userIdFromToken = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -204,7 +204,7 @@ namespace QLCTAPI.Controllers.Login
             return BadRequest(new { ErrorCode = ErrorCode.LOGOUTFAIL });
         }
 
-        [HttpPost("CheckToken")]
+        [HttpPost("checktoken")]
         public async Task<ActionResult> CheckToken()
         {
             if (Request.Headers.TryGetValue("Authorization", out var token))
@@ -218,7 +218,7 @@ namespace QLCTAPI.Controllers.Login
             return BadRequest(new { ErrorCode = ErrorCode.TOKENINVALID });
         }
 
-        [HttpPost("ForgetPassword")]
+        [HttpPost("forgetpassword")]
         public async Task<ActionResult> ForgetPassword([FromBody] MailDTO request)
         {
             var user = await _context.Users.Where(u => u.Email == request.Email).FirstOrDefaultAsync();

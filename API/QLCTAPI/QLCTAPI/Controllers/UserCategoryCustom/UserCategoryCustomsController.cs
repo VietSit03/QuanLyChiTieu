@@ -10,7 +10,7 @@ using QLCTAPI.Models;
 
 namespace QLCTAPI.Controllers.UserCategoryCustom
 {
-    [Route("CustomCategory/")]
+    [Route("customcategories/")]
     [ApiController]
     [CustomAuthorize]
     public class UserCategoryCustomsController : ControllerBase
@@ -23,7 +23,7 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
         }
 
 
-        [HttpGet("GetTop")]
+        [HttpGet("top")]
         public async Task<ActionResult> GetTopCategoryCustom([FromQuery] string type, [FromQuery] int num)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -51,7 +51,7 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
             return BadRequest(new Response { ErrorCode = ErrorCode.ERROR });
         }
 
-        [HttpGet("GetAll")]
+        [HttpGet("all")]
         public async Task<ActionResult> GetAll([FromQuery] string type)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -80,7 +80,7 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
             return BadRequest(new Response { ErrorCode = ErrorCode.ERROR });
         }
 
-        [HttpPost("Add")]
+        [HttpPost("add")]
         public async Task<ActionResult> Add([FromBody] UCCRequest request)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -113,7 +113,7 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
 
         }
 
-        [HttpPost("Delete")]
+        [HttpPost("delete")]
         public async Task<ActionResult> Delete([FromQuery] int id)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);

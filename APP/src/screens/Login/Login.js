@@ -45,7 +45,7 @@ const Login = ({ navigation }) => {
       return;
     }
 
-    const url = `${API_URL}/Login`;
+    const url = `${API_URL}/login`;
     var hashedPassword = encrypt(password.value);
     console.log(hashedPassword);
 

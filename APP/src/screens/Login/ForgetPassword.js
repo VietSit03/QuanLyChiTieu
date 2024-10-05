@@ -36,7 +36,7 @@ const ForgetPassword = ({ navigation }) => {
       return;
     }
 
-    const url = `${API_URL}/ForgetPassword`;
+    const url = `${API_URL}/forgetpassword`;
 
     try {
       const response = await fetch(url, {
@@ -114,7 +114,7 @@ const ForgetPassword = ({ navigation }) => {
     }
 
     var email = await AsyncStorage.getItem("email");
-    const url = `${API_URL}/VerifyCode/VerifyCode?email=${email}&code=${code.value}`;
+    const url = `${API_URL}/verifycodes/verify?email=${email}&code=${code.value}`;
 
     try {
       const response = await fetch(url, {
@@ -142,7 +142,7 @@ const ForgetPassword = ({ navigation }) => {
   };
 
   const CheckVerifyCode = async () => {
-    const url = `${API_URL}/VerifyCode/CheckVerifyCode?email=${email.value}`;
+    const url = `${API_URL}/verifycodes/check?email=${email.value}`;
 
     try {
       const response = await fetch(url, {

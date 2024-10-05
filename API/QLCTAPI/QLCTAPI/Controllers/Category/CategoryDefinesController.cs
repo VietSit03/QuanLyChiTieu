@@ -12,9 +12,8 @@ using QLCTAPI.Models;
 
 namespace QLCTAPI.Controllers.Category
 {
-    [Route("Category/")]
+    [Route("categories/")]
     [ApiController]
-    //[CustomAuthorize]
     public class CategoryDefinesController : ControllerBase
     {
         private readonly QuanLyChiTieuContext _context;
@@ -24,7 +23,7 @@ namespace QLCTAPI.Controllers.Category
             _context = context;
         }
 
-        [HttpGet("GetAll")]
+        [HttpGet("all")]
         public async Task<ActionResult> GetAllCategories()
         {
             List<CategoryDefine> listCategories = await _context.CategoryDefines.ToListAsync();
@@ -52,7 +51,7 @@ namespace QLCTAPI.Controllers.Category
         }
 
 
-        [HttpGet("GetTop")]
+        [HttpGet("top")]
         public async Task<ActionResult> GetTop([FromQuery] string type, [FromQuery] int num)
         {
             var listCategory = await _context.CategoryDefines

@@ -1,6 +1,4 @@
 import {
-  ActivityIndicator,
-  Dimensions,
   FlatList,
   Image,
   Pressable,
@@ -10,17 +8,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ThemeContext } from "../../Theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@env";
 import { LoadingPage } from "../../component/Loading";
-
-const screenWidth = Dimensions.get("window").width;
+import { formatMoney } from "../../common";
+import { useFocusEffect } from "@react-navigation/native";
 
 const TransSummary = React.memo(
-  ({ item, totalAmount, symbol, formatedBudget, navigation, type }) => {
+  ({ item, totalAmount, symbol, navigation, type }) => {
     return (
       <Pressable
         style={styles.transSummary}
@@ -61,14 +59,17 @@ const TransSummary = React.memo(
           }}
         >
           <Text numberOfLines={2} ellipsizeMode="tail">
-            {formatedBudget} {symbol}
+            {formatMoney(item.budget)} {symbol}
           </Text>
         </View>
       </Pressable>
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.item === nextProps.item;
+    return (
+      prevProps.totalAmount === nextProps.totalAmount &&
+      prevProps.item === nextProps.item
+    );
   }
 );
 
@@ -80,44 +81,26 @@ const HomeScreen = ({ route, navigation }) => {
   const [data, setData] = useState(null);
   const [totalAmount, setTotalAmount] = useState(0);
 
-  useEffect(() => {
-    async function fetchData() {
-      await fetchSummaryByType();
+  useFocusEffect(
+    useCallback(() => {
+      setLoadingPage(true);
+      async function fetchData() {
+        var cur = await AsyncStorage.getItem("currencySymbol");
+        setSymbol(cur);
+        await fetchSummaryByType();
+      }
 
-      setSymbol(await AsyncStorage.getItem("currencySymbol"));
+      fetchData();
       setLoadingPage(false);
-    }
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (data != null) {
-      const totalBudget = data.reduce((acc, item) => acc + item.budget, 0);
-
-      setTotalAmount(totalBudget);
-    }
-  }, [data]);
-
-  const formatBudget = (budget) => {
-    if (budget < 1_000_000) {
-      return budget.toLocaleString("en-US");
-    } else if (budget >= 1_000_000 && budget < 1_000_000_000) {
-      return (budget / 1_000_000).toFixed(1) + " Tr";
-    } else {
-      return (budget / 1_000_000_000).toFixed(1) + " T";
-    }
-  };
+    }, [])
+  );
 
   const renderTransSummary = ({ item, index }) => {
-    const formatedBudget = formatBudget(item.budget);
-
     return (
       <TransSummary
         item={item}
         totalAmount={totalAmount}
         symbol={symbol}
-        formatedBudget={formatedBudget}
         navigation={navigation}
         type={type}
       />
@@ -126,7 +109,7 @@ const HomeScreen = ({ route, navigation }) => {
 
   const fetchSummaryByType = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/transactions/get-summary-by-type?type=${type}`;
+    const url = `${API_URL}/transactions/getsummarybytype?type=${type}`;
 
     try {
       const response = await fetch(url, {
@@ -152,6 +135,12 @@ const HomeScreen = ({ route, navigation }) => {
       }
 
       const apiResponse = await response.json();
+
+      const totalBudget = apiResponse.data.reduce(
+        (acc, item) => acc + item.budget,
+        0
+      );
+      setTotalAmount(totalBudget);
 
       setData(apiResponse.data);
     } catch (error) {
@@ -225,7 +214,7 @@ const HomeScreen = ({ route, navigation }) => {
                   }}
                 >
                   <Text numberOfLines={2} ellipsizeMode="tail">
-                    {formatBudget(totalAmount)} {symbol}
+                    {formatMoney(totalAmount)} {symbol}
                   </Text>
                 </View>
               </Pressable>

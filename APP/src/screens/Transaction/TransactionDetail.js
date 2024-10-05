@@ -17,7 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { API_URL } from "@env";
 import ImageViewer from "react-native-image-zoom-viewer";
-import { alert } from "../../common";
+import { alert, formatMoney } from "../../common";
 
 const TransactionDetail = ({ navigation, route }) => {
   const { themeColors } = useContext(ThemeContext);
@@ -112,12 +112,9 @@ const TransactionDetail = ({ navigation, route }) => {
         return;
       }
 
-      alert(
-        "Thao tác thành công",
-        "Xoá giao dịch thành công",
-        () => navigation.replace("Home")
+      alert("Thao tác thành công", "Xoá giao dịch thành công", () =>
+        navigation.navigate("Home")
       );
-
     } catch (error) {
       console.error("Error:", error);
     }
@@ -210,7 +207,10 @@ const TransactionDetail = ({ navigation, route }) => {
         <TouchableOpacity style={{ paddingVertical: 10 }}>
           <Text style={{ color: "darkgreen" }}>SAO CHÉP</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{ paddingVertical: 10 }} onPress={() => fetchDeleteTransaction()}>
+        <TouchableOpacity
+          style={{ paddingVertical: 10 }}
+          onPress={() => fetchDeleteTransaction()}
+        >
           <Text style={{ color: "red" }}>XOÁ</Text>
         </TouchableOpacity>
       </View>
@@ -231,7 +231,9 @@ const TransactionDetail = ({ navigation, route }) => {
             <Row
               key={"Money"}
               title={"Số tiền"}
-              content={`${transaction.money} ${symbolCur}`}
+              content={
+                transaction.money.toLocaleString("en-US") + ` ${symbolCur}`
+              }
             />
             <Row
               key={"Category"}

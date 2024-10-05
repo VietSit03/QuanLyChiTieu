@@ -187,7 +187,7 @@ const AddTransaction = ({ route, navigation }) => {
 
   const fetchCurrency = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Currency/GetAll`;
+    const url = `${API_URL}/currencies/all`;
 
     try {
       const response = await fetch(url, {
@@ -228,7 +228,7 @@ const AddTransaction = ({ route, navigation }) => {
 
   const fetchExchangeCurrency = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Currency/ExchangeCurrency`;
+    const url = `${API_URL}/currencies/exchange`;
 
     try {
       const response = await fetch(url, {
@@ -267,7 +267,7 @@ const AddTransaction = ({ route, navigation }) => {
 
   const fetchCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/CustomCategory/GetTop?num=8&type=${type}`;
+    const url = `${API_URL}/customcategories/top?num=8&type=${type}`;
 
     try {
       const response = await fetch(url, {

@@ -262,7 +262,7 @@ const AddCategory = ({ navigation, route }) => {
 
   const fetchCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Category/GetTop?num=15&type=${checked}`;
+    const url = `${API_URL}/categories/top?num=15&type=${checked}`;
 
     try {
       const response = await fetch(url, {
@@ -296,7 +296,7 @@ const AddCategory = ({ navigation, route }) => {
 
   const fetchAddCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/CustomCategory/Add`;
+    const url = `${API_URL}/customcategories/Add`;
 
     try {
       const response = await fetch(url, {

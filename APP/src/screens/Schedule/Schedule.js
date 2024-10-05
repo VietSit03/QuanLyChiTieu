@@ -106,7 +106,7 @@ const Schedule = ({ navigation }) => {
 
   const fetchChangeActive = async (id) => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/schedules/toggle-active?id=${id}`;
+    const url = `${API_URL}/schedules/toggleactive?id=${id}`;
 
     try {
       const response = await fetch(url, {

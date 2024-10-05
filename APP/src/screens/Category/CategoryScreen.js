@@ -54,7 +54,7 @@ const CategoryScreen = ({
 
   const fetchCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/CustomCategory/GetAll?type=${type}`;
+    const url = `${API_URL}/customcategories/all?type=${type}`;
 
     try {
       const response = await fetch(url, {
@@ -81,7 +81,6 @@ const CategoryScreen = ({
       var apiResponse = await response.json();
 
       setCategory(apiResponse.data);
-      setLoadingPage(false);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -89,6 +88,7 @@ const CategoryScreen = ({
 
   useFocusEffect(
     useCallback(() => {
+      setLoadingPage(true);
       let isActive = true;
       async function fetchData() {
         if (isActive) {
@@ -97,6 +97,7 @@ const CategoryScreen = ({
       }
 
       fetchData();
+      setLoadingPage(false);
 
       return () => {
         isActive = false;
@@ -123,7 +124,7 @@ const CategoryScreen = ({
   const deleteCategory = async () => {
     setLoadingAction(true);
     const token = await AsyncStorage.getItem("token");
-    var url = `${API_URL}/CustomCategory/Delete?id=${selectedItem.id}`;
+    var url = `${API_URL}/customcategories/delete?id=${selectedItem.id}`;
 
     try {
       const response = await fetch(url, {
@@ -166,6 +167,7 @@ const CategoryScreen = ({
   };
 
   const handleDeleteItem = () => {
+    setLoadingPage(true);
     async function delCategory() {
       await deleteCategory();
       await fetchCategory();
@@ -173,6 +175,7 @@ const CategoryScreen = ({
 
     setModalVisible(false);
     delCategory();
+    setLoadingPage(false);
   };
 
   const Category = ({ item, drag }) => {
