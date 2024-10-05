@@ -5,7 +5,6 @@ import StackNavigator from "./StackNavigator";
 const Drawer = createDrawerNavigator();
 
 function DrawerNavigator() {
-
   return (
     <Drawer.Navigator
       initialRouteName="StackNavigator"

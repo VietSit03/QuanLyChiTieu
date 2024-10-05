@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import HomeScreen from "./HomeScreen";
 import { ThemeContext } from "../../Theme";
+import { useFocusEffect } from "@react-navigation/native";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -41,11 +42,6 @@ const Home = () => {
             },
           }}
         >
-          <Tab.Screen
-            name="TỔNG CỘNG"
-            component={HomeScreen}
-            initialParams={{ type: "TONG" }}
-          />
           <Tab.Screen
             name="CHI PHÍ"
             component={HomeScreen}

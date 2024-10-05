@@ -4,8 +4,6 @@ import Schedule from "../screens/Schedule/Schedule";
 import Category from "../screens/Category/Category";
 import Setting from "../screens/SettingScreen/Setting";
 import AddCategory from "../screens/Category/AddCategory";
-import Entypo from "@expo/vector-icons/Entypo";
-import { DrawerActions } from "@react-navigation/native";
 import { useContext } from "react";
 import IconCategory from "../screens/Category/IconCategory";
 import AddSchedule from "../screens/Schedule/AddSchedule";
@@ -18,23 +16,16 @@ import Login from "../screens/Login/Login";
 import Register from "../screens/Login/Register";
 import ForgetPassword from "../screens/Login/ForgetPassword";
 import ChangePassword from "../screens/Login/ChangePassword";
+import { DrawerNavigator } from "../component/Button";
+import ListCategory from "../screens/Category/ListCategory";
+import ListByCategory from "../screens/Transaction/ListByCategory";
+import TransactionDetail from "../screens/Transaction/TransactionDetail";
+import EditSchedule from "../screens/Schedule/EditSchedule";
 
 const Stack = createStackNavigator();
 
 function StackNavigator({ navigation }) {
   const { themeColors } = useContext(ThemeContext);
-
-  function DrawerNavigator() {
-    return (
-      <Entypo
-        name="menu"
-        size={26}
-        color="white"
-        onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-        style={{ marginLeft: 15 }}
-      />
-    );
-  }
 
   const screenOptions = () => ({
     headerStyle: {
@@ -52,7 +43,7 @@ function StackNavigator({ navigation }) {
   });
 
   const drawer = (title) => ({
-    headerLeft: () => <DrawerNavigator />,
+    headerLeft: () => <DrawerNavigator navigation={navigation} />,
     title: title,
   });
 
@@ -71,7 +62,8 @@ function StackNavigator({ navigation }) {
       <Stack.Screen
         name="Category"
         component={Category}
-        options={drawer("Danh mục")}
+        // options={drawer("Danh mục")}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Setting"
@@ -132,6 +124,26 @@ function StackNavigator({ navigation }) {
         name="ChangePassword"
         component={ChangePassword}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ListCategory"
+        component={ListCategory}
+        options={{ title: "Danh sách danh mục" }}
+      />
+      <Stack.Screen
+        name="ListByCategory"
+        component={ListByCategory}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="TransactionDetail"
+        component={TransactionDetail}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditSchedule"
+        component={EditSchedule}
+        options={{ title: "Sửa lịch thanh toán" }}
       />
     </Stack.Navigator>
   );

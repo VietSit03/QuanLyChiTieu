@@ -1,19 +1,34 @@
 import {
+  ActivityIndicator,
   FlatList,
   Image,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ThemeContext } from "../../Theme";
+import { LoadingAction, LoadingPage } from "../../component/Loading";
+import { API_URL } from "@env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DraggableFlatList from "react-native-draggable-flatlist";
+import { useFocusEffect } from "@react-navigation/native";
+import { alert } from "../../common";
 
-const CategoryScreen = ({ route, navigation }) => {
-  const { type } = route.params;
+const CategoryScreen = ({
+  type,
+  isDragEnabled,
+  setIsDragEnabled,
+  navigation,
+}) => {
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [loadingAction, setLoadingAction] = useState(false);
   const { themeColors } = useContext(ThemeContext);
-  const data = Array.from({ length: 10 }, (_, index) => ({ id: index + 1 }));
+  const [category, setCategory] = useState();
 
   const chunkArray = (arr, chunkSize) => {
     const result = [];
@@ -21,18 +36,14 @@ const CategoryScreen = ({ route, navigation }) => {
       result.push(arr.slice(i, i + chunkSize));
     }
 
-    // Adding the special category
     const specialCategory = { id: "special", isSpecial: true };
 
-    // If the last row has space for more items, push the special category there.
     if (result[result.length - 1].length < chunkSize) {
       result[result.length - 1].push(specialCategory);
     } else {
-      // Otherwise, create a new row for the special category.
       result.push([specialCategory]);
     }
 
-    // Add empty placeholders to the last row if needed
     const lastRow = result[result.length - 1];
     while (lastRow.length < chunkSize) {
       lastRow.push({ id: `empty-${lastRow.length}`, empty: true });
@@ -41,9 +52,130 @@ const CategoryScreen = ({ route, navigation }) => {
     return result;
   };
 
-  const rows = chunkArray(data, 3);
+  const fetchCategory = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/CustomCategory/GetAll?type=${type}`;
 
-  const Category = ({ item }) => {
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        return;
+      }
+
+      var apiResponse = await response.json();
+
+      setCategory(apiResponse.data);
+      setLoadingPage(false);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+      async function fetchData() {
+        if (isActive) {
+          await fetchCategory();
+        }
+      }
+
+      fetchData();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handleLongPress = (item, event) => {
+    const { pageX, pageY } = event.nativeEvent;
+    setModalPosition({ x: pageX, y: pageY });
+    setSelectedItem(item);
+    setModalVisible(true);
+  };
+
+  const handleEditItem = () => {
+    setIsDragEnabled((prev) => !prev);
+    setModalVisible(false);
+  };
+
+  const deleteCategory = async () => {
+    setLoadingAction(true);
+    const token = await AsyncStorage.getItem("token");
+    var url = `${API_URL}/CustomCategory/Delete?id=${selectedItem.id}`;
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+        } else {
+          var apiResponse = await response.json();
+          if (apiResponse.errorCode === "#0008") {
+            alert(
+              "Thao tác thất bại",
+              "Xoá danh mục thất bại. Vui lòng thử lại sau"
+            );
+          } else if (apiResponse.errorCode === "#1011") {
+            alert("Thao tác thất bại", "Bạn không thể xoá danh mục mặc định.");
+          }
+        }
+        setLoadingAction(false);
+        return;
+      }
+
+      alert("Xoá thành công", "Xoá danh mục thành công.");
+
+      setLoadingAction(false);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleDeleteItem = () => {
+    async function delCategory() {
+      await deleteCategory();
+      await fetchCategory();
+    }
+
+    setModalVisible(false);
+    delCategory();
+  };
+
+  const Category = ({ item, drag }) => {
     if (item.empty) {
       return <View style={{ width: 70, height: 60 }} />;
     }
@@ -60,7 +192,7 @@ const CategoryScreen = ({ route, navigation }) => {
                 justifyContent: "center",
                 alignItems: "center",
               }}
-              onPress={() => navigation.navigate("AddCategory")}
+              onPress={() => navigation.navigate("AddCategory", { type: type })}
             >
               <Ionicons name="add-outline" size={40} color="white" />
             </TouchableOpacity>
@@ -74,27 +206,30 @@ const CategoryScreen = ({ route, navigation }) => {
           </View>
         ) : (
           <View style={{ alignItems: "center", width: 70 }}>
-            <TouchableOpacity
+            <Pressable
               style={{
                 height: 60,
                 width: 60,
                 borderRadius: 30,
-                backgroundColor: "purple",
+                backgroundColor: item.color,
                 justifyContent: "center",
                 alignItems: "center",
               }}
+              onLongPress={
+                isDragEnabled ? drag : (event) => handleLongPress(item, event)
+              }
             >
               <Image
-                source={{ uri: "https://imgur.com/b0SG0aW.png" }}
+                source={{ uri: item.imgSrc }}
                 style={{ width: 40, height: 40 }}
               />
-            </TouchableOpacity>
+            </Pressable>
             <Text
               numberOfLines={2}
               ellipsizeMode="tail"
               style={{ marginTop: 2 }}
             >
-              Category {item.id}
+              {item.name}
             </Text>
           </View>
         )}
@@ -102,7 +237,7 @@ const CategoryScreen = ({ route, navigation }) => {
     );
   };
 
-  const renderRow = ({ item }) => {
+  const renderRow = ({ item, drag }) => {
     return (
       <View
         style={{
@@ -111,25 +246,102 @@ const CategoryScreen = ({ route, navigation }) => {
           justifyContent: "space-around",
         }}
       >
-        {item.map((category) => {
-          return <Category key={category.id} item={category} />;
+        {item.map((category, index) => {
+          return (
+            <Category key={index.toString()} item={category} drag={drag} />
+          );
         })}
       </View>
     );
   };
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <FlatList
-        data={rows}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={renderRow}
-        scrollEnabled={true}
-      />
-    </View>
+    <>
+      {loadingPage ? (
+        <LoadingPage />
+      ) : (
+        <View style={{ flex: 1, padding: 20 }}>
+          {loadingAction && <LoadingAction />}
+          {isDragEnabled ? (
+            <DraggableFlatList
+              data={chunkArray(category, 4)}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderRow}
+              scrollEnabled={true}
+              onDragEnd={({ data }) => {
+                setCategory(data);
+              }}
+              onTouchStart={(data) => {
+                console.log(data);
+              }}
+            />
+          ) : (
+            <FlatList
+              data={chunkArray(category, 3)}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderRow}
+              scrollEnabled={true}
+            />
+          )}
+
+          {modalVisible && (
+            <Modal
+              transparent={true}
+              animationType="fade"
+              visible={modalVisible}
+              onRequestClose={() => setModalVisible(false)}
+              statusBarTranslucent={true}
+            >
+              <TouchableOpacity
+                style={styles.overlay}
+                activeOpacity={1}
+                onPress={() => setModalVisible(false)}
+              >
+                <View
+                  style={[
+                    styles.modalView,
+                    { top: modalPosition.y, left: modalPosition.x - 50 },
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handleEditItem}
+                  >
+                    <Text>Đổi thứ tự</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handleDeleteItem}
+                  >
+                    <Text>Xoá</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </Modal>
+          )}
+        </View>
+      )}
+    </>
   );
 };
 
 export default CategoryScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalView: {
+    position: "absolute",
+    maxWidth: 150,
+    backgroundColor: "white",
+    borderRadius: 5,
+    padding: 10,
+    elevation: 5,
+  },
+  modalButton: {
+    padding: 10,
+  },
+});

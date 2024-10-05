@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "iq0vedDQdNs=",
+  "dgSpecHash": "9uQjofTy4mA=",
   "success": true,
   "projectFilePath": "D:\\Doan\\QuanLyChiTieu\\API\\QLCTAPI\\QLCTAPI\\QLCTAPI.csproj",
   "expectedPackageFiles": [
@@ -97,12 +97,12 @@
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identity.client\\4.56.0\\microsoft.identity.client.4.56.0.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identity.client.extensions.msal\\4.56.0\\microsoft.identity.client.extensions.msal.4.56.0.nupkg.sha512",
-    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.0.2\\microsoft.identitymodel.abstractions.8.0.2.nupkg.sha512",
+    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.1.2\\microsoft.identitymodel.abstractions.7.1.2.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.1.2\\microsoft.identitymodel.jsonwebtokens.7.1.2.nupkg.sha512",
-    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identitymodel.logging\\8.0.2\\microsoft.identitymodel.logging.8.0.2.nupkg.sha512",
+    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identitymodel.logging\\7.1.2\\microsoft.identitymodel.logging.7.1.2.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identitymodel.protocols\\7.1.2\\microsoft.identitymodel.protocols.7.1.2.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.1.2\\microsoft.identitymodel.protocols.openidconnect.7.1.2.nupkg.sha512",
-    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.0.2\\microsoft.identitymodel.tokens.8.0.2.nupkg.sha512",
+    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.1.2\\microsoft.identitymodel.tokens.7.1.2.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.net.stringtools\\17.8.3\\microsoft.net.stringtools.17.8.3.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.openapi\\1.2.3\\microsoft.openapi.1.2.3.nupkg.sha512",

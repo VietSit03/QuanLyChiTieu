@@ -85,10 +85,14 @@ const Login = ({ navigation }) => {
       }
 
       await AsyncStorage.setItem("token", apiResponse.token);
+      await AsyncStorage.setItem("currencyBase", apiResponse.data.currencyCode);
+      await AsyncStorage.setItem("currencySymbol", apiResponse.data.currencySymbol);
 
       console.log(apiResponse.token);
+      console.log(apiResponse.data.currencyCode);
+      console.log(apiResponse.data.currencySymbol);
 
-      navigation.navigate("DrawerNavigator");
+      navigation.replace("DrawerNavigator");
     } catch (error) {
       console.error("Error:", error);
     }

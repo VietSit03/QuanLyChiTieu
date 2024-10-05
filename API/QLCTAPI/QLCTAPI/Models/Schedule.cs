@@ -7,6 +7,8 @@ public partial class Schedule
 {
     public int Id { get; set; }
 
+    public Guid? UserId { get; set; }
+
     public int? CategoryCustomId { get; set; }
 
     public string? Name { get; set; }

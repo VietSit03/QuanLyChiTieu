@@ -1,13 +1,16 @@
 import {
   Alert,
   FlatList,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@env";
+import { LoadingPage } from "../../component/Loading";
+import { alert } from "../../common";
 
 const Cur = React.memo(
   ({ item, handle }) => {
@@ -29,37 +32,99 @@ const Cur = React.memo(
     prevProps.item.currencyCode === nextProps.item.currencyCode
 );
 
-const Currency = () => {
-  const currency = [
-    { currencyName: "Đô la Mỹ", currencyCode: "USD" },
-    { currencyName: "Euro", currencyCode: "EUR" },
-    { currencyName: "Đồng Việt Nam", currencyCode: "VND" },
-    { currencyName: "Bảng Anh", currencyCode: "GBP" },
-    { currencyName: "Yên Nhật", currencyCode: "JPY" },
-    { currencyName: "Đô la Úc", currencyCode: "AUD" },
-    { currencyName: "Đô la Canada", currencyCode: "CAD" },
-    { currencyName: "Franc Thụy Sĩ", currencyCode: "CHF" },
-    { currencyName: "Nhân dân tệ Trung Quốc", currencyCode: "CNY" },
-    { currencyName: "Krona Thụy Điển", currencyCode: "SEK" },
-    { currencyName: "Đô la New Zealand", currencyCode: "NZD" },
-    { currencyName: "Peso Mexico", currencyCode: "MXN" },
-    { currencyName: "Đô la Singapore", currencyCode: "SGD" },
-    { currencyName: "Đô la Hồng Kông", currencyCode: "HKD" },
-    { currencyName: "Krone Na Uy", currencyCode: "NOK" },
-    { currencyName: "Won Hàn Quốc", currencyCode: "KRW" },
-    { currencyName: "Lira Thổ Nhĩ Kỳ", currencyCode: "TRY" },
-    { currencyName: "Rúp Nga", currencyCode: "RUB" },
-    { currencyName: "Rupee Ấn Độ", currencyCode: "INR" },
-    { currencyName: "Real Brazil", currencyCode: "BRL" },
-    { currencyName: "Rand Nam Phi", currencyCode: "ZAR" },
-    { currencyName: "Krone Đan Mạch", currencyCode: "DKK" },
-    { currencyName: "Baht Thái", currencyCode: "THB" },
-    { currencyName: "Ringgit Malaysia", currencyCode: "MYR" },
-    { currencyName: "Rupiah Indonesia", currencyCode: "IDR" },
-  ];
+const Currency = ({ navigation }) => {
+  const [isLoadingPage, setIsLoadingPage] = useState(true);
+  const [currency, setCurrency] = useState(null);
 
   const handleConfirm = () => {
     console.log("confirm");
+  };
+
+  useEffect(() => {
+    async function fetchData() {
+      await fetchCurrency();
+    }
+
+    fetchData();
+    setIsLoadingPage(false);
+  }, []);
+
+  const fetchCurrency = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/Currency/GetAll`;
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        return;
+      }
+
+      var apiResponse = await response.json();
+      var currencies = apiResponse.data;
+
+      setCurrency(currencies);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const fetchChangeCurrency = async (currencyCode) => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/Users/change-currency?code=${currencyCode}`;
+
+    try {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        alert("Lỗi", "Xảy ra lỗi khi đổi tiền tệ");
+        return;
+      }
+
+      var apiResponse = await response.json();
+
+      await AsyncStorage.setItem("currencyBase", apiResponse.data.currencyCode);
+      await AsyncStorage.setItem(
+        "currencySymbol",
+        apiResponse.data.symbol
+      );
+
+      alert("Thành công", "Đổi loại tiền thành công", () =>
+        navigation.navigate("Setting")
+      );
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const handleSelectCur = (item) => {
@@ -73,13 +138,12 @@ const Currency = () => {
         },
         {
           text: "Tiếp tục",
-          onPress: () => handleConfirm(),
+          onPress: () => fetchChangeCurrency(item.currencyCode),
           style: "destructive",
         },
       ],
       { cancelable: true }
     );
-    console.log("Selected currency:", item.currencyName);
   };
 
   const renderCurrency = ({ item }) => {
@@ -87,18 +151,25 @@ const Currency = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={{ marginTop: 10, paddingHorizontal: 20, fontSize: 18 }}>
-        Chọn đơn vị tiền tệ mặc định
-      </Text>
-      <FlatList
-        data={currency}
-        style={styles.fl}
-        keyExtractor={(item) => item.currencyCode}
-        renderItem={renderCurrency}
-      />
-      <View style={styles.footer}></View>
-    </View>
+    <>
+      {isLoadingPage ? (
+        <LoadingPage />
+      ) : (
+        <View style={styles.container}>
+          <Text style={{ marginTop: 10, paddingHorizontal: 20, fontSize: 18 }}>
+            Chọn đơn vị tiền tệ mặc định
+          </Text>
+          <FlatList
+            data={currency}
+            style={styles.fl}
+            keyExtractor={(item) => item.currencyCode}
+            renderItem={renderCurrency}
+            showsVerticalScrollIndicator={false}
+          />
+          <View style={styles.footer}></View>
+        </View>
+      )}
+    </>
   );
 };
 

@@ -10,4 +10,6 @@ public partial class CategoryDefine
     public string? PurposeCode { get; set; }
 
     public string? ImgSrc { get; set; }
+
+    public string? Type { get; set; }
 }
