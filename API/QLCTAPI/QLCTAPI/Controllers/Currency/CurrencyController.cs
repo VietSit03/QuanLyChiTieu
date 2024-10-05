@@ -45,17 +45,8 @@ namespace QLCTAPI.Controllers.Currency
         [HttpPost("ExchangeCurrency")]
         public async Task<ActionResult> ExchangeCurrency([FromBody] ExchangeCurrencyRequest request)
         {
-            var sellRate = await _context.CurrencyDefines
-                .Where(cd => cd.CurrencyCode == request.FromCurrencyCode)
-                .Select(x => x.SellRate)
-                .FirstOrDefaultAsync();
 
-            var buyRate = await _context.CurrencyDefines
-                .Where(cd => cd.CurrencyCode == request.ToCurrencyCode)
-                .Select(x => x.BuyRate)
-                .FirstOrDefaultAsync();
-
-            var money = request.Money * sellRate / buyRate;
+            var money = await new Common().ExchangeMoney(request.Money, request.FromCurrencyCode, request.ToCurrencyCode);
 
             var data = new ExchangeCurrencyDTO
             {

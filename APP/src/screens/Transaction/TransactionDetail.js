@@ -51,7 +51,7 @@ const TransactionDetail = ({ navigation, route }) => {
 
   const fetchGetTransaction = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Transaction/GetByTransId?transId=${transId}`;
+    const url = `${API_URL}/transactions/get?transId=${transId}`;
 
     try {
       const response = await fetch(url, {
@@ -87,7 +87,7 @@ const TransactionDetail = ({ navigation, route }) => {
 
   const fetchDeleteTransaction = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Transaction/Delete?transId=${transId}`;
+    const url = `${API_URL}/transactions/delete?transId=${transId}`;
 
     try {
       const response = await fetch(url, {

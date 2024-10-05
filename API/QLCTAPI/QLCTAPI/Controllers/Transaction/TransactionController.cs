@@ -2,13 +2,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QLCTAPI.Controllers.Currency;
+using QLCTAPI.Controllers.User;
 using QLCTAPI.DTOs;
 using QLCTAPI.Models;
+using System.Diagnostics;
 using System.Security.Claims;
 
 namespace QLCTAPI.Controllers.Transaction
 {
-    [Route("Transaction/")]
+    [Route("transactions/")]
     [ApiController]
     [CustomAuthorize]
     public class TransactionController : ControllerBase
@@ -21,7 +23,7 @@ namespace QLCTAPI.Controllers.Transaction
         }
 
 
-        [HttpPost("Add")]
+        [HttpPost("add")]
         public async Task<ActionResult> AddTransaction([FromBody] AddRequest request)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -78,20 +80,32 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.CREATEDATAFAIL });
         }
 
-        [HttpGet("GetSummaryByType")]
+        [HttpGet("get-summary-by-type")]
         public async Task<ActionResult> GetSummaryByType([FromQuery] string type)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (Guid.TryParse(userID, out var id))
             {
+                var currencyBase = await new Common().GetCurrencyCode(id);
+
                 var listTrans = await _context.Transactions.Where(t => t.UserId == id && t.Type == type && t.Status == "S").ToListAsync();
 
-                var group = listTrans.GroupBy(lt => new { lt.UserId, lt.CategoryCustomId, lt.Type })
-                    .Select(x => new
+                var tasks = listTrans.GroupBy(lt => new { lt.UserId, lt.CategoryCustomId, lt.Type, lt.CurrencyCode })
+                    .Select(async x => new
                     {
                         CategoryCustomId = x.Key.CategoryCustomId,
-                        Budget = x.Sum(t => t.Money)
+                        Budget = x.Key.CurrencyCode != currencyBase
+                            ? await new Common().ExchangeMoney(x.Sum(t => t.Money).Value, x.Key.CurrencyCode, currencyBase)
+                            : x.Sum(t => t.Money),
+                    });
+
+                var group = (await Task.WhenAll(tasks))
+                    .GroupBy(t => t.CategoryCustomId)
+                    .Select(g => new
+                    {
+                        CategoryCustomId = g.Key,
+                        Budget = g.Sum(x => x.Budget)
                     })
                     .OrderByDescending(x => x.Budget)
                     .ToList();
@@ -116,33 +130,47 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.GETDATAFAIL });
         }
 
-        [HttpGet("GetSummaryByCategory")]
+        [HttpGet("get-summary-by-category")]
         public async Task<ActionResult> GetSummaryByCategory([FromQuery] string type, [FromQuery] int categoryId)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (Guid.TryParse(userID, out var id))
             {
+                var currencyBase = await new Common().GetCurrencyCode(id);
+
                 var listTrans = await _context.Transactions.Where(t => t.UserId == id && t.Type == type && (categoryId == 0 || t.CategoryCustomId == categoryId) && t.Status == "S").ToListAsync();
 
-                var group = listTrans.GroupBy(lt => new { lt.UserId, lt.Type, lt.CreateAt.Value.Year, lt.CreateAt.Value.Month })
-                    .Select(x => new
+                var tasks = listTrans.GroupBy(lt => new { lt.UserId, lt.Type, lt.CreateAt.Value.Year, lt.CreateAt.Value.Month, lt.CurrencyCode })
+                    .Select(async x => new
                     {
-                        Budget = x.Sum(t => t.Money),
+                        Budget = x.Key.CurrencyCode != currencyBase
+                            ? await new Common().ExchangeMoney(x.Sum(t => t.Money).Value, x.Key.CurrencyCode, currencyBase)
+                            : x.Sum(t => t.Money),
                         Count = x.Count(),
                         Year = x.Key.Year,
                         Month = x.Key.Month
+                    });
+
+                var group = (await Task.WhenAll(tasks))
+                    .GroupBy(t => new { t.Year, t.Month})
+                    .Select(g => new
+                    {
+                        Budget = g.Sum(x => x.Budget),
+                        Count = g.Sum(x => x.Count),
+                        Year = g.Key.Year,
+                        Month = g.Key.Month
                     })
                     .OrderByDescending(x => x.Year)
                     .ThenByDescending(x => x.Month)
                     .ToList();
 
                 var summary = group.Select(x => new
-                {
-                    Budget = x.Budget,
-                    Count = x.Count,
-                    Time = x.Month + "-" + x.Year,
-                })
+                    {
+                        Budget = x.Budget,
+                        Count = x.Count,
+                        Time = x.Month + "-" + x.Year,
+                    })
                     .ToList();
 
                 return Ok(new { ErrorCode = ErrorCode.GETDATASUCCESS, Data = summary });
@@ -151,7 +179,7 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.GETDATAFAIL });
         }
 
-        [HttpGet("GetListByTime")]
+        [HttpGet("get-list-by-time")]
         public async Task<ActionResult> GetListByTime([FromQuery] string type, [FromQuery] int categoryId, [FromQuery] string time)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -162,20 +190,27 @@ namespace QLCTAPI.Controllers.Transaction
             {
                 if (parts.Length == 2 && int.TryParse(parts[0], out month) && int.TryParse(parts[1], out year))
                 {
+                    var currencyBase = await new Common().GetCurrencyCode(id);
+
                     var listTrans = await _context.Transactions
                     .Where(t => t.UserId == id && t.Type == type && (categoryId == 0 || t.CategoryCustomId == categoryId)
                             && t.Status == "S" && t.CreateAt.Value.Year == year && t.CreateAt.Value.Month == month)
                     .ToListAsync();
 
-                    var group = listTrans.GroupBy(lt => new { lt.Id, lt.UserId, lt.Money, lt.CreateAt, lt.CategoryCustomId })
-                        .Select(x => new
+                    var tasks = listTrans.GroupBy(lt => new { lt.Id, lt.UserId, lt.Money, lt.CreateAt, lt.CategoryCustomId, lt.CurrencyCode })
+                        .Select(async x => new
                         {
                             Id = x.Key.Id,
                             CategoryCustomId = x.Key.CategoryCustomId,
-                            Money = x.Key.Money,
+                            Money = x.Key.CurrencyCode != currencyBase
+                            ? await new Common().ExchangeMoney(x.Key.Money.Value, x.Key.CurrencyCode, currencyBase)
+                            : x.Key.Money,
                             CreateAt = x.Key.CreateAt
-                        })
-                        .OrderByDescending(x => x.CreateAt)
+                        });
+
+                    var group = (await Task.WhenAll(tasks))
+                        .OrderByDescending(x => x.Money)
+                        .ThenByDescending(x => x.CreateAt)
                         .ToList();
 
                     var list = group.Join(_context.UserCategoryCustoms,
@@ -209,25 +244,32 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.GETDATAFAIL });
         }
 
-        [HttpGet("GetListByMoney")]
+        [HttpGet("get-list-by-money")]
         public async Task<ActionResult> GetListByMoney([FromQuery] string type, [FromQuery] int categoryId)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (Guid.TryParse(userID, out var id))
             {
+                var currencyBase = await new Common().GetCurrencyCode(id);
+
                 var listTrans = await _context.Transactions
                 .Where(t => t.UserId == id && t.Type == type && (categoryId == 0 || t.CategoryCustomId == categoryId) && t.Status == "S")
                 .ToListAsync();
 
-                var order = listTrans.GroupBy(lt => new { lt.Id, lt.Money, lt.CategoryCustomId, lt.CreateAt })
-                    .Select(x => new
+                var tasks = listTrans
+                    .GroupBy(lt => new { lt.Id, lt.Money, lt.CategoryCustomId, lt.CreateAt, lt.CurrencyCode })
+                    .Select(async x => new
                     {
                         Id = x.Key.Id,
                         CategoryCustomId = x.Key.CategoryCustomId,
-                        Money = x.Key.Money,
+                        Money = x.Key.CurrencyCode != currencyBase
+                            ? await new Common().ExchangeMoney(x.Key.Money.Value, x.Key.CurrencyCode, currencyBase)
+                            : x.Key.Money,
                         CreateAt = x.Key.CreateAt
-                    })
+                    });
+
+                var order = (await Task.WhenAll(tasks))
                     .OrderByDescending(x => x.Money)
                     .ThenByDescending(x => x.CreateAt)
                     .ToList();
@@ -258,16 +300,23 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.GETDATAFAIL });
         }
 
-        [HttpGet("GetByTransId")]
+        [HttpGet("get")]
         public async Task<ActionResult> GetByTransId([FromQuery] int transId)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (Guid.TryParse(userID, out var id))
             {
+                var currencyBase = await new Common().GetCurrencyCode(id);
+
                 var trans = await _context.Transactions
                 .Where(t => t.Id == transId && t.UserId == id)
                 .FirstOrDefaultAsync();
+
+                if (trans.CurrencyCode != currencyBase)
+                {
+                    trans.Money = await new Common().ExchangeMoney(trans.Money.Value, trans.CurrencyCode, currencyBase);
+                }
 
 
                 var category = await _context.UserCategoryCustoms.Where(ucc => ucc.Id == trans.CategoryCustomId)
@@ -300,7 +349,7 @@ namespace QLCTAPI.Controllers.Transaction
             return BadRequest(new { ErrorCode = ErrorCode.GETDATAFAIL });
         }
 
-        [HttpDelete("Delete")]
+        [HttpDelete("delete")]
         public async Task<ActionResult> Delete([FromQuery] int transId)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -340,7 +389,7 @@ namespace QLCTAPI.Controllers.Transaction
                 await _context.SaveChangesAsync();
 
 
-                return Ok(new { ErrorCode = ErrorCode.DELETEDATASUCCESS});
+                return Ok(new { ErrorCode = ErrorCode.DELETEDATASUCCESS });
             }
 
             return BadRequest(new { ErrorCode = ErrorCode.DELETEDATAFAIL });

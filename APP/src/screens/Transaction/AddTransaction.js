@@ -545,7 +545,7 @@ const AddTransaction = ({ route, navigation }) => {
 
   const fetchAddTrans = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Transaction/Add`;
+    const url = `${API_URL}/transactions/add`;
     const categoryId = parseInt(selectedCategory.id);
     const money = parseFloat(moneyBaseInput);
 
@@ -738,7 +738,7 @@ const AddTransaction = ({ route, navigation }) => {
                     =
                   </Text>
                   <Text style={styles.moneyBaseInput}>
-                    {moneyBaseInput.toLocaleString("en-US")}
+                    {moneyBaseInput}
                   </Text>
                   <Text
                     style={{

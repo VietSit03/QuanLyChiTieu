@@ -101,11 +101,11 @@ const HomeScreen = ({ route, navigation }) => {
 
   const formatBudget = (budget) => {
     if (budget < 1_000_000) {
-      return budget.toLocaleString("vi-VN");
+      return budget.toLocaleString("en-US");
     } else if (budget >= 1_000_000 && budget < 1_000_000_000) {
-      return (budget / 1_000_000).toFixed(1).replace(".", ",") + " Tr";
+      return (budget / 1_000_000).toFixed(1) + " Tr";
     } else {
-      return (budget / 1_000_000_000).toFixed(1).replace(".", ",") + " T";
+      return (budget / 1_000_000_000).toFixed(1) + " T";
     }
   };
 
@@ -126,7 +126,7 @@ const HomeScreen = ({ route, navigation }) => {
 
   const fetchSummaryByType = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Transaction/GetSummaryByType?type=${type}`;
+    const url = `${API_URL}/transactions/get-summary-by-type?type=${type}`;
 
     try {
       const response = await fetch(url, {

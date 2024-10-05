@@ -232,7 +232,7 @@ const ListByCategory = ({ navigation, route }) => {
 
   const fetchSummaryByCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Transaction/GetSummaryByCategory?type=${type}&categoryId=${ctgId}`;
+    const url = `${API_URL}/transactions/get-summary-by-category?type=${type}&categoryId=${ctgId}`;
 
     try {
       const response = await fetch(url, {
@@ -273,7 +273,7 @@ const ListByCategory = ({ navigation, route }) => {
 
   const fetchTransByMoney = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Transaction/GetListByMoney?type=${type}&categoryId=${ctgId}`;
+    const url = `${API_URL}/transactions/get-list-by-money?type=${type}&categoryId=${ctgId}`;
 
     try {
       const response = await fetch(url, {
@@ -308,7 +308,7 @@ const ListByCategory = ({ navigation, route }) => {
 
   const fetchTransactions = async (time) => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Transaction/GetListByTime?type=${type}&categoryId=${ctgId}&time=${time}`;
+    const url = `${API_URL}/transactions/get-list-by-time?type=${type}&categoryId=${ctgId}&time=${time}`;
 
     try {
       const response = await fetch(url, {

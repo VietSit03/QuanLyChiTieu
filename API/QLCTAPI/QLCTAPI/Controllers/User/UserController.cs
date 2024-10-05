@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using QLCTAPI.Models;
+using System.Security.Claims;
 
 namespace QLCTAPI.Controllers.User
 {
@@ -52,6 +54,25 @@ namespace QLCTAPI.Controllers.User
             await _context.SaveChangesAsync();
 
             return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS, Message = "Kích hoạt tài khoản thành công, quay lại ứng dụng để tiếp tục" });
+        }
+
+        [HttpPut("change-currency")]
+        public async Task<ActionResult> ChangeCurrency([FromQuery] string code)
+        {
+            var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(userID, out var id))
+            {
+                var user = await _context.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+
+                user.CurrencyCode = code;
+
+                await _context.SaveChangesAsync();
+
+                var newCur = await _context.CurrencyDefines.Where(cd => cd.CurrencyCode == code).FirstOrDefaultAsync();
+
+                return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS, Data = newCur });
+            }
+            return BadRequest(new { ErrorCode = ErrorCode.UPDATEDATAFAIL });
         }
     }
 }

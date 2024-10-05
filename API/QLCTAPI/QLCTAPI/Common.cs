@@ -80,5 +80,32 @@ namespace QLCTAPI
 
             return true;
         }
+
+        public async Task<string> GetCurrencyCode(Guid userID)
+        {
+            if (Guid.TryParse(userID.ToString(), out var id))
+            {
+                var currencyCode = await _context.Users.Where(u => u.Id == id).Select(x => x.CurrencyCode).FirstOrDefaultAsync();
+                return currencyCode;
+            }
+            return "";
+        }
+
+        public async Task<decimal> ExchangeMoney(decimal money, string fromCurrencyCode, string toCurrencyCode)
+        {
+            var sellRate = await _context.CurrencyDefines
+                .Where(cd => cd.CurrencyCode == fromCurrencyCode)
+                .Select(x => x.SellRate)
+                .FirstOrDefaultAsync();
+
+            var buyRate = await _context.CurrencyDefines
+                .Where(cd => cd.CurrencyCode == toCurrencyCode)
+                .Select(x => x.BuyRate)
+                .FirstOrDefaultAsync();
+
+            var exchangeMoney = money * sellRate / buyRate;
+
+            return Math.Round((decimal)exchangeMoney, 4);
+        }
     }
 }
