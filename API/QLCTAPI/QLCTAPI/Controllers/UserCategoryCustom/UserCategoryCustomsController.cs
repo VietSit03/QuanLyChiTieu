@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QLCTAPI.Models;
-using static QLCTAPI.Controllers.UserCategoryCustom.Request;
 
 namespace QLCTAPI.Controllers.UserCategoryCustom
 {
@@ -82,7 +81,7 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
         }
 
         [HttpPost("Add")]
-        public async Task<ActionResult> Add([FromBody] Request request)
+        public async Task<ActionResult> Add([FromBody] UCCRequest request)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

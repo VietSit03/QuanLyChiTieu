@@ -198,10 +198,6 @@ const AddCategory = ({ navigation, route }) => {
     );
   };
 
-  const getSelectedColor = () => {
-    return selectedColor;
-  };
-
   const checkIcon = () => {
     if (selectedIcon.id == -1) {
       setIcon({ error: "Chọn một biểu tượng danh mục" });

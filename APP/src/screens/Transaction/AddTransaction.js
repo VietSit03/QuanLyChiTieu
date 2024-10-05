@@ -74,7 +74,7 @@ const Category = React.memo(
                 alignItems: "center",
               }}
               onPress={() =>
-                navigation.navigate("ListCategory", { type: type })
+                navigation.navigate("ListCategory", { type: type, page: "AddTransaction" })
               }
             >
               <Ionicons name="add-outline" size={40} color="white" />
