@@ -27,9 +27,22 @@ export const isEmptyInput = (key, setKey) => {
   }
 };
 
-export const alert = (title, content, actionOK) => {
+export const alert = (title, content, actionOK, actionCancel) => {
   if (title != "" && content != "") {
     if (actionOK != "") {
+      if (actionCancel == "cancel") {
+        Alert.alert(title, content, [
+          {
+            text: "Huỷ bỏ",
+            style: "cancel",
+          },
+          {
+            text: "OK",
+            onPress: actionOK,
+          },
+        ]);
+        return;
+      }
       Alert.alert(title, content, [
         {
           text: "OK",

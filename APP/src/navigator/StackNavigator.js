@@ -20,6 +20,7 @@ import { DrawerNavigator } from "../component/Button";
 import ListCategory from "../screens/Category/ListCategory";
 import ListByCategory from "../screens/Transaction/ListByCategory";
 import TransactionDetail from "../screens/Transaction/TransactionDetail";
+import EditSchedule from "../screens/Schedule/EditSchedule";
 
 const Stack = createStackNavigator();
 
@@ -138,6 +139,11 @@ function StackNavigator({ navigation }) {
         name="TransactionDetail"
         component={TransactionDetail}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditSchedule"
+        component={EditSchedule}
+        options={{ title: "Sửa lịch thanh toán" }}
       />
     </Stack.Navigator>
   );

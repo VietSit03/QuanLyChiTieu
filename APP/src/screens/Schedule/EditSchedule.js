@@ -1,6 +1,5 @@
 import {
   Image,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -8,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { RadioButton, TextInput } from "react-native-paper";
 import { Dropdown } from "react-native-element-dropdown";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -19,17 +18,18 @@ import { LoadingPage } from "../../component/Loading";
 import { useFocusEffect } from "@react-navigation/native";
 import { alert, isEmptyInput } from "../../common";
 
-const AddSchedule = ({ route, navigation }) => {
+const EditSchedule = ({ route, navigation }) => {
   const { themeColors } = useContext(ThemeContext);
-  const type = route.params?.type || "CHI";
-  const [checked, setChecked] = useState(type);
+  const { id } = route.params;
+  const isFirstLoad = useRef(true);
+  const [checked, setChecked] = useState(null);
   const [loadingPage, setLoadingPage] = useState(true);
   const [category, setCategory] = useState(null);
   const [catError, setCatError] = useState("");
 
   const [currency, setCurrency] = useState("VND");
   const [frequency, setFrequency] = useState([]);
-  const [selectedFrequency, setSelectedFrequency] = useState({ id: "" });
+  const [selectedFrequency, setSelectedFrequency] = useState(null);
   const [name, setName] = useState({
     title: "Tên khoản thanh toán",
     value: "",
@@ -53,7 +53,9 @@ const AddSchedule = ({ route, navigation }) => {
   useEffect(() => {
     async function fetchData() {
       setLoadingPage(true);
+      await AsyncStorage.setItem("scheduleId", id.toString());
       await fetchFrequency();
+      await fetchSchedule();
       setCurrency(await AsyncStorage.getItem("currencyBase"));
     }
 
@@ -63,22 +65,17 @@ const AddSchedule = ({ route, navigation }) => {
 
   useEffect(() => {
     if (route.params?.category) {
-      setLoadingPage(true);
       var ctg = route.params?.category;
       setCategory(ctg);
-      setLoadingPage(false);
-      return;
     }
   }, [route.params]);
 
   useEffect(() => {
-    async function fetchData() {
-      setLoadingPage(true);
+    if (isFirstLoad.current && checked) {
+      isFirstLoad.current = false;
+    } else {
       setCategory(null);
-      setLoadingPage(false);
     }
-
-    fetchData();
   }, [checked]);
 
   useFocusEffect(
@@ -123,7 +120,7 @@ const AddSchedule = ({ route, navigation }) => {
     return `${day} Th${month}, ${year}`;
   };
 
-  const handleAddCategory = () => {
+  const handleUpdateSchedule = () => {
     if (isEmptyInput(name, setName)) {
       return;
     }
@@ -140,7 +137,7 @@ const AddSchedule = ({ route, navigation }) => {
     }
 
     async function add() {
-      await fetchAddSchedule();
+      await fetchEditSchedule();
     }
 
     add();
@@ -170,9 +167,54 @@ const AddSchedule = ({ route, navigation }) => {
     }
   };
 
-  const fetchAddSchedule = async () => {
+  const fetchSchedule = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/schedules/add`;
+    const id = await AsyncStorage.getItem("scheduleId");
+    const url = `${API_URL}/schedules/get?id=${id}`;
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        alert("Lỗi", "Xảy ra lỗi khi lấy thông tin");
+        return;
+      }
+
+      var apiResponse = await response.json();
+
+      setCategory(apiResponse.data.category);
+      setSelectedFrequency(apiResponse.data.frequency);
+      setName({ ...name, value: apiResponse.data.name });
+      setChecked(apiResponse.data.type);
+      setMoney({ ...money, value: apiResponse.data.money.toString() });
+      setNote({ ...note, value: apiResponse.data.note });
+      setFromDate(new Date(apiResponse.data.startDate));
+      setFromTime(new Date(apiResponse.data.startDate));
+      setToDate(new Date(apiResponse.data.endDate));
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const fetchEditSchedule = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const id = await AsyncStorage.getItem("scheduleId");
+    const url = `${API_URL}/schedules/update?id=${id}`;
     const startDate =
       fromDate.getFullYear() +
       "-" +
@@ -192,10 +234,10 @@ const AddSchedule = ({ route, navigation }) => {
         "-" +
         String(toDate.getDate()).padStart(2, "0");
 
-    console.log(selectedFrequency);
+    console.log(note.value);
     try {
       const response = await fetch(url, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -211,7 +253,6 @@ const AddSchedule = ({ route, navigation }) => {
           note: note.value,
         }),
       });
-      console.log(endDate);
 
       if (!response.ok) {
         if (response.status === 403) {
@@ -223,12 +264,12 @@ const AddSchedule = ({ route, navigation }) => {
           await AsyncStorage.setItem("token", "");
           return;
         }
-        alert("Lỗi", "Xảy ra lỗi khi thêm lịch thanh toán");
+        alert("Lỗi", "Xảy ra lỗi khi sửa lịch thanh toán");
         return;
       }
 
-      alert("Thành công", "Tạo lịch thanh toán thành công", () =>
-        navigation.navigate("Schedule")
+      alert("Thành công", "Sửa lịch thanh toán thành công", () =>
+        navigation.navigate("Schedule", { id: id })
       );
     } catch (error) {
       console.error("Error:", error);
@@ -459,7 +500,7 @@ const AddSchedule = ({ route, navigation }) => {
                 onPress={() =>
                   navigation.navigate("ListCategory", {
                     type: checked,
-                    page: "AddSchedule",
+                    page: "EditSchedule",
                   })
                 }
               >
@@ -499,7 +540,7 @@ const AddSchedule = ({ route, navigation }) => {
                 onPress={() =>
                   navigation.navigate("ListCategory", {
                     type: checked,
-                    page: "AddSchedule",
+                    page: "EditSchedule",
                   })
                 }
               >
@@ -547,9 +588,9 @@ const AddSchedule = ({ route, navigation }) => {
           >
             <TouchableOpacity
               style={styles.btnAdd}
-              onPress={() => handleAddCategory()}
+              onPress={() => handleUpdateSchedule()}
             >
-              <Text style={{ fontSize: 16 }}>Tạo</Text>
+              <Text style={{ fontSize: 16 }}>Cập nhật</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -558,7 +599,7 @@ const AddSchedule = ({ route, navigation }) => {
   );
 };
 
-export default AddSchedule;
+export default EditSchedule;
 
 const styles = StyleSheet.create({
   container: {

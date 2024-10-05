@@ -17,7 +17,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { alert } from "../../common";
 
 const ListCategory = ({ route, navigation }) => {
-  const { type } = route.params;
+  const { type, page } = route.params;
   const [loadingPage, setLoadingPage] = useState(true);
   const { themeColors } = useContext(ThemeContext);
   const [category, setCategory] = useState();
@@ -136,7 +136,7 @@ const ListCategory = ({ route, navigation }) => {
                 justifyContent: "center",
                 alignItems: "center",
               }}
-              onPress={() => navigation.navigate("AddTransaction", {type: type, category: item})}
+              onPress={() => navigation.navigate(page, {type: type, category: item})}
             >
               <Image
                 source={{ uri: item.imgSrc }}

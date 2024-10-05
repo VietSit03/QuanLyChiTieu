@@ -1,6 +1,6 @@
 ﻿namespace QLCTAPI.Controllers.UserCategoryCustom
 {
-    public class Request
+    public class UCCRequest
     {
         public int CategoryID { get; set; }
         public string? CategoryName { get; set; }
