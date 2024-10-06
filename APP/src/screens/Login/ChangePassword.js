@@ -15,6 +15,7 @@ import { encrypt } from "../../common";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { passwordRegex } from "../../regex";
 import { isEmptyInput } from "../../common";
+import { Logo } from "../../component/Image";
 
 const ChangePassword = ({ navigation }) => {
   const [isLoadingAction, setIsLoadingAction] = useState(false);
@@ -146,10 +147,9 @@ const ChangePassword = ({ navigation }) => {
       style={styles.background}
     >
       <View style={styles.container}>
-        <Image
-          source={require("../../../assets/icon.png")}
-          style={styles.logo}
-        />
+        <Logo />
+        <View style={{ marginBottom: 40 }}></View>
+
         {isLoadingAction && (
           <ActivityIndicator style={{ marginVertical: 10 }} size={"large"} />
         )}
@@ -249,11 +249,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#f5f5f5",
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 40,
   },
   input: {
     width: "90%",

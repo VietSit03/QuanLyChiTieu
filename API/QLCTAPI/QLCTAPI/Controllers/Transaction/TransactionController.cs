@@ -6,6 +6,7 @@ using QLCTAPI.Controllers.User;
 using QLCTAPI.DTOs;
 using QLCTAPI.Models;
 using System.Diagnostics;
+using System.Linq;
 using System.Security.Claims;
 
 namespace QLCTAPI.Controllers.Transaction
@@ -37,7 +38,7 @@ namespace QLCTAPI.Controllers.Transaction
                     Type = request.Type,
                     Money = request.Money,
                     CurrencyCode = request.CurrencyCode,
-                    CreateAt = request.CreateAt,
+                    CreateAt = DateTime.ParseExact(request.CreateAt, "yyyy-MM-dd HH:mm", null),
                     Note = request.Note,
                     Status = "P"
                 };
@@ -68,16 +69,89 @@ namespace QLCTAPI.Controllers.Transaction
                     user.Balance += trans.Money;
                 }
 
-                await _context.SaveChangesAsync();
-
                 trans.Status = "S";
 
                 await _context.SaveChangesAsync();
 
-                return Ok(new { ErrorCode = ErrorCode.CREATEDATASUCCESS });
+                return Ok(new
+                {
+                    ErrorCode = ErrorCode.CREATEDATASUCCESS,
+                    Data = new
+                    {
+                        newBalance = user.Balance
+                    }
+                });
             }
 
             return BadRequest(new { ErrorCode = ErrorCode.CREATEDATAFAIL });
+        }
+
+
+        [HttpPut("update")]
+        public async Task<ActionResult> UpdateTransaction([FromQuery] int id, [FromBody] AddRequest request)
+        {
+            var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (Guid.TryParse(userID, out var uid))
+            {
+                var trans = await _context.Transactions.Where(t => t.Id == id).FirstOrDefaultAsync();
+                var oldMoney = trans.Money;
+                var user = await _context.Users.Where(u => u.Id == uid).FirstOrDefaultAsync();
+
+                trans.CategoryCustomId = request.CategoryId;
+                trans.Money = request.Money;
+                trans.CurrencyCode = request.CurrencyCode;
+                trans.CreateAt = DateTime.ParseExact(request.CreateAt, "yyyy-MM-dd HH:mm", null);
+                trans.Note = request.Note;
+
+                if (trans.Type == "CHI")
+                {
+                    user.Balance += (oldMoney - request.Money);
+                }
+                else if (trans.Type == "THU")
+                {
+                    user.Balance += (request.Money - oldMoney);
+                }
+
+                if (request.ImgSrc.Count > 0)
+                {
+                    foreach (var imgSrc in request.ImgSrc)
+                    {
+                        var img = await _context.TransactionImages.Where(ti => ti.ImgSrc == imgSrc).FirstOrDefaultAsync();
+
+                        // Ảnh mới
+                        if (img == null)
+                        {
+                            await _context.AddAsync(new TransactionImage
+                            {
+                                TransactionId = trans.Id,
+                                ImgSrc = imgSrc,
+                            });
+                        }
+                        // Ảnh cũ vẫn giữ lại
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    // Ảnh cũ không giữ lại
+                    var removeImgs = await _context.TransactionImages.Where(ti => ti.TransactionId == id && request.ImgSrc.All(x => x != ti.ImgSrc)).ToListAsync();
+                    _context.TransactionImages.RemoveRange(removeImgs);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    ErrorCode = ErrorCode.UPDATEDATASUCCESS,
+                    Data = new
+                    {
+                        newBalance = user.Balance
+                    }
+                });
+            }
+
+            return BadRequest(new { ErrorCode = ErrorCode.UPDATEDATAFAIL });
         }
 
         [HttpGet("getsummarybytype")]
@@ -153,7 +227,7 @@ namespace QLCTAPI.Controllers.Transaction
                     });
 
                 var group = (await Task.WhenAll(tasks))
-                    .GroupBy(t => new { t.Year, t.Month})
+                    .GroupBy(t => new { t.Year, t.Month })
                     .Select(g => new
                     {
                         Budget = g.Sum(x => x.Budget),
@@ -166,11 +240,11 @@ namespace QLCTAPI.Controllers.Transaction
                     .ToList();
 
                 var summary = group.Select(x => new
-                    {
-                        Budget = x.Budget,
-                        Count = x.Count,
-                        Time = x.Month + "-" + x.Year,
-                    })
+                {
+                    Budget = x.Budget,
+                    Count = x.Count,
+                    Time = x.Month + "-" + x.Year,
+                })
                     .ToList();
 
                 return Ok(new { ErrorCode = ErrorCode.GETDATASUCCESS, Data = summary });
@@ -326,6 +400,7 @@ namespace QLCTAPI.Controllers.Transaction
                     (ucc, cd) => new { ucc, cd })
                     .Select(x => new
                     {
+                        Id = x.ucc.Id,
                         ImgSrc = x.cd.ImgSrc,
                         Name = x.ucc.CategoryName,
                         Color = x.ucc.CategoryColor,
@@ -336,9 +411,12 @@ namespace QLCTAPI.Controllers.Transaction
 
                 var data = new
                 {
+                    Id = transId,
+                    Type = trans.Type,
                     Money = trans.Money,
                     Category = category,
                     CreateAt = trans.CreateAt,
+                    Note = trans.Note,
                     Img = img,
                 };
 
@@ -382,14 +460,21 @@ namespace QLCTAPI.Controllers.Transaction
                     }
 
                     await _context.SaveChangesAsync();
+
+                    _context.Transactions.Remove(trans);
+
+                    await _context.SaveChangesAsync();
+
+
+                    return Ok(new
+                    {
+                        ErrorCode = ErrorCode.DELETEDATASUCCESS,
+                        Data = new
+                        {
+                            newBalance = user.Balance
+                        }
+                    });
                 }
-
-                _context.Transactions.Remove(trans);
-
-                await _context.SaveChangesAsync();
-
-
-                return Ok(new { ErrorCode = ErrorCode.DELETEDATASUCCESS });
             }
 
             return BadRequest(new { ErrorCode = ErrorCode.DELETEDATAFAIL });

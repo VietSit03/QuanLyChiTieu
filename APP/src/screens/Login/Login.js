@@ -14,6 +14,7 @@ import { API_URL, CRYPTOJS_KEY } from "@env";
 import CryptoJS, { enc } from "crypto-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { encrypt } from "../../common";
+import { Logo } from "../../component/Image";
 
 const Login = ({ navigation }) => {
   const [error, setError] = useState("");
@@ -40,14 +41,19 @@ const Login = ({ navigation }) => {
   };
 
   const handleLogin = async () => {
-    if (email.error != "" || password.error != "" || email.value == "" || password.value == "") {
+    if (
+      email.error != "" ||
+      password.error != "" ||
+      email.value == "" ||
+      password.value == ""
+    ) {
       Alert.alert("Thông báo", "Hãy nhập đầy đủ thông tin");
       return;
     }
 
     const url = `${API_URL}/login`;
     var hashedPassword = encrypt(password.value);
-    console.log(hashedPassword);
+    // console.log(hashedPassword);
 
     setLogging(true);
 
@@ -68,16 +74,16 @@ const Login = ({ navigation }) => {
       var apiResponse = await response.json();
       if (!response.ok) {
         if (apiResponse.errorCode == "#1010") {
-          setError("Tài khoản chưa được kích hoạt. Hãy truy cập địa chỉ email để tiếp tục");
+          setError(
+            "Tài khoản chưa được kích hoạt. Hãy truy cập địa chỉ email để tiếp tục"
+          );
           setPassword({ ...password, value: "", error: "" });
-          return
-        }
-        else if (apiResponse.errorCode == "#1003") {
+          return;
+        } else if (apiResponse.errorCode == "#1003") {
           setError("Tài khoản đã bị vô hiệu hoá");
           setPassword({ ...password, value: "", error: "" });
-          return
-        }
-        else if (apiResponse.errorCode == "#1002") {
+          return;
+        } else if (apiResponse.errorCode == "#1002") {
           setError("Thông tin đăng nhập không chính xác");
           setPassword({ ...password, value: "", error: "" });
           return;
@@ -85,12 +91,20 @@ const Login = ({ navigation }) => {
       }
 
       await AsyncStorage.setItem("token", apiResponse.token);
+      await AsyncStorage.setItem("email", apiResponse.data.email);
+      await AsyncStorage.setItem(
+        "balance",
+        apiResponse.data.balance.toString()
+      );
       await AsyncStorage.setItem("currencyBase", apiResponse.data.currencyCode);
-      await AsyncStorage.setItem("currencySymbol", apiResponse.data.currencySymbol);
+      await AsyncStorage.setItem(
+        "currencySymbol",
+        apiResponse.data.currencySymbol
+      );
 
-      console.log(apiResponse.token);
-      console.log(apiResponse.data.currencyCode);
-      console.log(apiResponse.data.currencySymbol);
+      // console.log(apiResponse.token);
+      // console.log(apiResponse.data.currencyCode);
+      // console.log(apiResponse.data.currencySymbol);
 
       navigation.replace("DrawerNavigator");
     } catch (error) {
@@ -105,10 +119,8 @@ const Login = ({ navigation }) => {
       style={styles.background}
     >
       <View style={styles.container}>
-        <Image
-          source={require("../../../assets/icon.png")} // Thay đổi đường dẫn logo của bạn
-          style={styles.logo}
-        />
+        <Logo />
+        <View style={{ marginBottom: 40 }}></View>
 
         {logging && <ActivityIndicator size={"large"} />}
 
@@ -191,11 +203,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 40,
   },
   input: {
     width: "80%",

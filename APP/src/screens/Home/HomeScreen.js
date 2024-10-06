@@ -83,15 +83,14 @@ const HomeScreen = ({ route, navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      setLoadingPage(true);
       async function fetchData() {
         var cur = await AsyncStorage.getItem("currencySymbol");
         setSymbol(cur);
         await fetchSummaryByType();
+        setLoadingPage(false);
       }
 
       fetchData();
-      setLoadingPage(false);
     }, [])
   );
 

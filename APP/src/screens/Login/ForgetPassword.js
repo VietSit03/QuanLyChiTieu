@@ -13,6 +13,7 @@ import { TextInput } from "react-native-paper";
 import { Image } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isEmptyInput } from "../../common";
+import { Logo } from "../../component/Image";
 
 const ForgetPassword = ({ navigation }) => {
   const [email, setEmail] = useState({ title: "Email", value: "", error: "" });
@@ -170,10 +171,9 @@ const ForgetPassword = ({ navigation }) => {
       style={styles.background}
     >
       <View style={styles.container}>
-        <Image
-          source={require("../../../assets/icon.png")}
-          style={styles.logo}
-        />
+        <Logo />
+        <View style={{ marginBottom: 40 }}></View>
+        
         {isLoadingAction && (
           <ActivityIndicator style={{ marginVertical: 10 }} size={"large"} />
         )}

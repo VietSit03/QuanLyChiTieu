@@ -43,6 +43,7 @@ const Schedule = ({ navigation }) => {
         item.id === id ? { ...item, isActive: !item.isActive } : item
       )
     );
+
     async function changeActive() {
       await fetchChangeActive(id);
     }
@@ -54,10 +55,10 @@ const Schedule = ({ navigation }) => {
     useCallback(() => {
       async function fetchData() {
         await fetchSchedule();
+        setLoadingPage(false);
       }
 
       fetchData();
-      setLoadingPage(false);
     }, [])
   );
 

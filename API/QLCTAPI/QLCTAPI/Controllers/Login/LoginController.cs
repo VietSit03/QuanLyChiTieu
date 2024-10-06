@@ -93,6 +93,8 @@ namespace QLCTAPI.Controllers.Login
                         Data = new UserDTO
                         {
                             Id = user.Id,
+                            Email = user.Email,
+                            Balance = user.Balance,
                             Name = user.Name,
                             CurrencyCode = user.CurrencyCode,
                             CurrencySymbol = currency.Symbol,
@@ -112,6 +114,8 @@ namespace QLCTAPI.Controllers.Login
                         Data = new UserDTO
                         {
                             Id = user.Id,
+                            Email = user.Email,
+                            Balance = user.Balance,
                             Name = user.Name,
                             CurrencyCode = user.CurrencyCode,
                             CurrencySymbol = currency.Symbol,

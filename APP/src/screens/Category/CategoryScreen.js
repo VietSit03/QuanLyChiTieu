@@ -88,16 +88,15 @@ const CategoryScreen = ({
 
   useFocusEffect(
     useCallback(() => {
-      setLoadingPage(true);
       let isActive = true;
       async function fetchData() {
         if (isActive) {
           await fetchCategory();
+          setLoadingPage(false);
         }
       }
 
       fetchData();
-      setLoadingPage(false);
 
       return () => {
         isActive = false;
@@ -122,7 +121,6 @@ const CategoryScreen = ({
   };
 
   const deleteCategory = async () => {
-    setLoadingAction(true);
     const token = await AsyncStorage.getItem("token");
     var url = `${API_URL}/customcategories/delete?id=${selectedItem.id}`;
 
@@ -154,28 +152,25 @@ const CategoryScreen = ({
             alert("Thao tác thất bại", "Bạn không thể xoá danh mục mặc định.");
           }
         }
-        setLoadingAction(false);
         return;
       }
 
       alert("Xoá thành công", "Xoá danh mục thành công.");
-
-      setLoadingAction(false);
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
   const handleDeleteItem = () => {
-    setLoadingPage(true);
     async function delCategory() {
+      setLoadingAction(true);
       await deleteCategory();
       await fetchCategory();
     }
 
     setModalVisible(false);
     delCategory();
-    setLoadingPage(false);
+    setLoadingAction(false);
   };
 
   const Category = ({ item, drag }) => {

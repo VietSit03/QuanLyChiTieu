@@ -52,13 +52,12 @@ const AddSchedule = ({ route, navigation }) => {
 
   useEffect(() => {
     async function fetchData() {
-      setLoadingPage(true);
       await fetchFrequency();
       setCurrency(await AsyncStorage.getItem("currencyBase"));
+      setLoadingPage(false);
     }
 
     fetchData();
-    setLoadingPage(false);
   }, []);
 
   useEffect(() => {
@@ -192,7 +191,6 @@ const AddSchedule = ({ route, navigation }) => {
         "-" +
         String(toDate.getDate()).padStart(2, "0");
 
-    console.log(selectedFrequency);
     try {
       const response = await fetch(url, {
         method: "POST",
@@ -211,7 +209,6 @@ const AddSchedule = ({ route, navigation }) => {
           note: note.value,
         }),
       });
-      console.log(endDate);
 
       if (!response.ok) {
         if (response.status === 403) {
