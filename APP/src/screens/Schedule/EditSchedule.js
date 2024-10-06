@@ -57,10 +57,10 @@ const EditSchedule = ({ route, navigation }) => {
       await fetchFrequency();
       await fetchSchedule();
       setCurrency(await AsyncStorage.getItem("currencyBase"));
+      setLoadingPage(false);
     }
 
     fetchData();
-    setLoadingPage(false);
   }, []);
 
   useEffect(() => {
@@ -234,7 +234,6 @@ const EditSchedule = ({ route, navigation }) => {
         "-" +
         String(toDate.getDate()).padStart(2, "0");
 
-    console.log(note.value);
     try {
       const response = await fetch(url, {
         method: "PUT",

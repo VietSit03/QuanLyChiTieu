@@ -46,7 +46,7 @@ const ListCategory = ({ route, navigation }) => {
 
   const fetchCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/CustomCategory/GetAll?type=${type}`;
+    const url = `${API_URL}/customcategories/all?type=${type}`;
 
     try {
       const response = await fetch(url, {

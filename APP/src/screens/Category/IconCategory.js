@@ -123,7 +123,7 @@ const IconCategory = ({ navigation, route }) => {
 
   const fetchCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Category/GetAll`;
+    const url = `${API_URL}/categories/all`;
 
     try {
       const response = await fetch(url, {

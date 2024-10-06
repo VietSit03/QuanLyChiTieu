@@ -89,8 +89,8 @@ export const formatMoney = (money) => {
   if (money < 1_000_000) {
     return money.toLocaleString("vi-VN");
   } else if (money >= 1_000_000 && money < 1_000_000_000) {
-    return (money / 1_000_000).toFixed(1).replace(".", ",") + " Tr";
+    return (money / 1_000_000).toFixed(3).replace(".", ",") + " Tr";
   } else {
-    return (money / 1_000_000_000).toFixed(1).replace(".", ",") + " T";
+    return (money / 1_000_000_000).toFixed(3).replace(".", ",") + " T";
   }
 };

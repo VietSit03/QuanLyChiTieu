@@ -17,7 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { API_URL } from "@env";
 import ImageViewer from "react-native-image-zoom-viewer";
-import { alert } from "../../common";
+import { alert, formatMoney } from "../../common";
 
 const TransactionDetail = ({ navigation, route }) => {
   const { themeColors } = useContext(ThemeContext);
@@ -79,10 +79,19 @@ const TransactionDetail = ({ navigation, route }) => {
       const apiResponse = await response.json();
 
       setTransaction(apiResponse.data);
-      console.log(apiResponse.data.category);
+      console.log(apiResponse.data);
     } catch (error) {
       console.error("Error:", error);
     }
+  };
+
+  const handleDelete = () => {
+    alert(
+      "Xác nhận",
+      "Bạn có muốn xoá giao dịch này?",
+      async () => await fetchDeleteTransaction(),
+      "cancel"
+    );
   };
 
   const fetchDeleteTransaction = async () => {
@@ -112,12 +121,16 @@ const TransactionDetail = ({ navigation, route }) => {
         return;
       }
 
-      alert(
-        "Thao tác thành công",
-        "Xoá giao dịch thành công",
-        () => navigation.replace("Home")
+      var apiResponse = await response.json();
+
+      await AsyncStorage.setItem(
+        "balance",
+        apiResponse.data.newBalance.toString()
       );
 
+      alert("Thao tác thành công", "Xoá giao dịch thành công", () =>
+        navigation.navigate("Home")
+      );
     } catch (error) {
       console.error("Error:", error);
     }
@@ -144,7 +157,13 @@ const TransactionDetail = ({ navigation, route }) => {
         </View>
         <Pressable
           style={styles.btnRight}
-          // onPress={() => setIsEditting(!isEditting)}
+          onPress={() =>
+            navigation.navigate("AddTransaction", {
+              type: transaction.type,
+              trans: transaction,
+              update: true,
+            })
+          }
         >
           <AntDesign name="edit" size={24} color="white" />
         </Pressable>
@@ -183,7 +202,7 @@ const TransactionDetail = ({ navigation, route }) => {
             ellipsizeMode="tail"
             numberOfLines={2}
           >
-            {content}
+            {content ? content : `Không có ${title.toLowerCase()}`}
           </Text>
         </View>
       </View>
@@ -207,10 +226,21 @@ const TransactionDetail = ({ navigation, route }) => {
   const Footer = () => {
     return (
       <View style={{ marginTop: 10 }}>
-        <TouchableOpacity style={{ paddingVertical: 10 }}>
+        <TouchableOpacity
+          style={{ paddingVertical: 10 }}
+          onPress={() =>
+            navigation.navigate("AddTransaction", {
+              type: transaction.type,
+              trans: transaction,
+            })
+          }
+        >
           <Text style={{ color: "darkgreen" }}>SAO CHÉP</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{ paddingVertical: 10 }} onPress={() => fetchDeleteTransaction()}>
+        <TouchableOpacity
+          style={{ paddingVertical: 10 }}
+          onPress={() => handleDelete()}
+        >
           <Text style={{ color: "red" }}>XOÁ</Text>
         </TouchableOpacity>
       </View>
@@ -231,7 +261,9 @@ const TransactionDetail = ({ navigation, route }) => {
             <Row
               key={"Money"}
               title={"Số tiền"}
-              content={`${transaction.money} ${symbolCur}`}
+              content={
+                transaction.money.toLocaleString("en-US") + ` ${symbolCur}`
+              }
             />
             <Row
               key={"Category"}
@@ -244,6 +276,7 @@ const TransactionDetail = ({ navigation, route }) => {
               title={"Thời gian"}
               content={FormatDateTime(transaction.createAt)}
             />
+            <Row key={"Note"} title={"Ghi chú"} content={transaction.note} />
             <View style={{ marginTop: 20 }}>
               <Text style={styles.rowTitle}>Ảnh</Text>
               <View
@@ -253,19 +286,23 @@ const TransactionDetail = ({ navigation, route }) => {
                   alignItems: "center",
                 }}
               >
-                <FlatList
-                  data={transaction.img}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item }) => (
-                    <View style={styles.imageContainer}>
-                      <TouchableOpacity onPress={() => openImage(item)}>
-                        <Image source={{ uri: item }} style={styles.image} />
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  showsHorizontalScrollIndicator={false}
-                  horizontal
-                />
+                {transaction.img && transaction.img.length > 0 ? (
+                  <FlatList
+                    data={transaction.img}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item }) => (
+                      <View style={styles.imageContainer}>
+                        <TouchableOpacity onPress={() => openImage(item)}>
+                          <Image source={{ uri: item }} style={styles.image} />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    showsHorizontalScrollIndicator={false}
+                    horizontal
+                  />
+                ) : (
+                  <Text>Không có ảnh</Text>
+                )}
               </View>
             </View>
             <Footer />

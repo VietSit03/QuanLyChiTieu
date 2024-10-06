@@ -74,7 +74,10 @@ const Category = React.memo(
                 alignItems: "center",
               }}
               onPress={() =>
-                navigation.navigate("ListCategory", { type: type, page: "AddTransaction" })
+                navigation.navigate("ListCategory", {
+                  type: type,
+                  page: "AddTransaction",
+                })
               }
             >
               <Ionicons name="add-outline" size={40} color="white" />
@@ -153,14 +156,18 @@ const AddTransaction = ({ route, navigation }) => {
   const [curBase, setCurBase] = useState();
   const [selectedCur, setSelectedCur] = useState();
   const [isFocusedNote, setIsFocusedNote] = useState(false);
-  const [category, setCategory] = useState();
+  const [category, setCategory] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState({ id: -1 });
+  const [dataFetched, setDataFetched] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [transId, setTransId] = useState("0");
 
   useEffect(() => {
     async function fetchData() {
       await fetchCurrency();
       await fetchCategory();
       setLoadingPage(false);
+      setDataFetched(true);
     }
 
     fetchData();
@@ -169,11 +176,38 @@ const AddTransaction = ({ route, navigation }) => {
   useEffect(() => {
     if (route.params?.category) {
       var ctg = route.params?.category;
-      setCategory((prevCategory) => [ctg, ...prevCategory]);
+      setCategory([ctg, ...category]);
       setSelectedCategory(ctg);
       return;
     }
-  }, [route.params]);
+  }, [route.params?.category]);
+
+  useEffect(() => {
+    async function clone() {
+      if (dataFetched && route.params?.trans) {
+        var trans = route.params?.trans;
+        setMoneyBaseInput(trans.money);
+        setNote(trans.note);
+        setTime(new Date(trans.createAt));
+        const categoryExists = category.some(
+          (cat) => cat.id === trans.category.id
+        );
+        if (!categoryExists) {
+          setCategory([trans.category, ...category]);
+        }
+        setSelectedCategory(trans.category);
+        setImages(trans.img);
+        setImgSrc(trans.img);
+      }
+
+      if (route.params?.update) {
+        setIsUpdate(true);
+        setTransId(trans.id);
+      }
+    }
+
+    clone();
+  }, [dataFetched, route.params?.trans]);
 
   useEffect(() => {
     async function fetchExchange() {
@@ -187,7 +221,7 @@ const AddTransaction = ({ route, navigation }) => {
 
   const fetchCurrency = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Currency/GetAll`;
+    const url = `${API_URL}/currencies/all`;
 
     try {
       const response = await fetch(url, {
@@ -228,7 +262,7 @@ const AddTransaction = ({ route, navigation }) => {
 
   const fetchExchangeCurrency = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Currency/ExchangeCurrency`;
+    const url = `${API_URL}/currencies/exchange`;
 
     try {
       const response = await fetch(url, {
@@ -267,7 +301,7 @@ const AddTransaction = ({ route, navigation }) => {
 
   const fetchCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/CustomCategory/GetTop?num=8&type=${type}`;
+    const url = `${API_URL}/customcategories/top?num=8&type=${type}`;
 
     try {
       const response = await fetch(url, {
@@ -396,8 +430,6 @@ const AddTransaction = ({ route, navigation }) => {
 
         const finalDate = new Date(year, month, day, hours, minutes, seconds);
 
-        console.log(finalDate);
-
         setTime(finalDate);
 
         setMode("date");
@@ -499,8 +531,8 @@ const AddTransaction = ({ route, navigation }) => {
 
     if (index > -1) {
       setImages(images.filter((image, i) => i !== index));
-
       setImagesBase64(imagesBase64.filter((_, i) => i !== index));
+      setImgSrc(imgSrc.filter((_, i) => i !== index));
     }
   };
 
@@ -535,11 +567,16 @@ const AddTransaction = ({ route, navigation }) => {
 
   useEffect(() => {
     if (isUpload) {
-      async function add() {
-        await fetchAddTrans();
+      async function execute() {
+        if (isUpdate) {
+          await fetchUpdateTrans(transId);
+        }
+        else {
+          await fetchAddTrans();
+        }
         setLoadingAction(false);
       }
-      add();
+      execute();
     }
   }, [isUpload, imgSrc]);
 
@@ -548,6 +585,17 @@ const AddTransaction = ({ route, navigation }) => {
     const url = `${API_URL}/transactions/add`;
     const categoryId = parseInt(selectedCategory.id);
     const money = parseFloat(moneyBaseInput);
+    const createAt =
+      time.getFullYear() +
+      "-" +
+      String(time.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(time.getDate()).padStart(2, "0") +
+      " " +
+      String(time.getHours()).padStart(2, "0") +
+      ":" +
+      String(time.getMinutes()).padStart(2, "0");
+    ":" + String(time.getSeconds()).padStart(2, "0");
 
     try {
       const response = await fetch(url, {
@@ -561,7 +609,7 @@ const AddTransaction = ({ route, navigation }) => {
           type: type,
           money: money,
           currencyCode: curBase.currencyCode,
-          createAt: new Date(time),
+          createAt: createAt,
           note: note,
           imgSrc: imgSrc,
         }),
@@ -580,6 +628,13 @@ const AddTransaction = ({ route, navigation }) => {
         alert("Lỗi", "Xảy ra lỗi khi thêm giao dịch. Vui lòng thử lại sau.");
         return;
       }
+
+      var apiResponse = await response.json();
+
+      await AsyncStorage.setItem(
+        "balance",
+        apiResponse.data.newBalance.toString()
+      );
 
       alert("Thành công", "Thêm giao dịch thành công.", () =>
         navigation.replace("Home")
@@ -612,6 +667,102 @@ const AddTransaction = ({ route, navigation }) => {
       }
     } catch (error) {
       console.error("Error uploading image:", error);
+    }
+  };
+
+  const [newImg, setNewImg] = useState([]);
+  const handleUpdateTrans = async () => {
+    async function update() {
+      // await fetchUpdateTrans(transId);
+      console.log(images);
+      console.log(imgSrc);
+      const uniqueImages = images.filter((image) => !imgSrc.includes(image));
+      console.log(uniqueImages);
+      setNewImg(uniqueImages);
+    }
+
+    update();
+
+    setLoadingAction(true);
+
+    const uploadImages = async () => {
+      for (const base64Image of imagesBase64) {
+        if (!(await uploadImage(base64Image))) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    if (!(await uploadImages())) {
+      alert("Lỗi ảnh", "Xảy ra lỗi khi lưu ảnh, vui lòng thử lại.");
+      setLoadingAction(false);
+      return;
+    }
+
+    setIsUpload(true);
+  };
+  const fetchUpdateTrans = async (id) => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/transactions/update?id=${id}`;
+    const categoryId = parseInt(selectedCategory.id);
+    const money = parseFloat(moneyBaseInput);
+    const createAt =
+      time.getFullYear() +
+      "-" +
+      String(time.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(time.getDate()).padStart(2, "0") +
+      " " +
+      String(time.getHours()).padStart(2, "0") +
+      ":" +
+      String(time.getMinutes()).padStart(2, "0");
+    ":" + String(time.getSeconds()).padStart(2, "0");
+
+    try {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          categoryId: categoryId,
+          type: type,
+          money: money,
+          currencyCode: curBase.currencyCode,
+          createAt: createAt,
+          note: note,
+          imgSrc: imgSrc,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        alert("Lỗi", "Xảy ra lỗi khi thêm giao dịch. Vui lòng thử lại sau.");
+        return;
+      }
+
+      var apiResponse = await response.json();
+
+      await AsyncStorage.setItem(
+        "balance",
+        apiResponse.data.newBalance.toString()
+      );
+
+      alert("Thành công", "Cập nhật giao dịch thành công.", () =>
+        navigation.replace("Home")
+      );
+    } catch (error) {
+      console.error("Error:", error);
     }
   };
 
@@ -737,9 +888,7 @@ const AddTransaction = ({ route, navigation }) => {
                   >
                     =
                   </Text>
-                  <Text style={styles.moneyBaseInput}>
-                    {moneyBaseInput}
-                  </Text>
+                  <Text style={styles.moneyBaseInput}>{moneyBaseInput}</Text>
                   <Text
                     style={{
                       ...styles.cur,
@@ -877,15 +1026,27 @@ const AddTransaction = ({ route, navigation }) => {
                 horizontal
               />
             </View>
-            <View style={styles.btnSelect}>
-              <TouchableOpacity
-                style={styles.btnSelectActive}
-                // disabled={selectedCategory.id == -1}
-                onPress={() => handleAddTrans()}
-              >
-                <Text>Thêm</Text>
-              </TouchableOpacity>
-            </View>
+            {isUpdate ? (
+              <View style={styles.btnSelect}>
+                <TouchableOpacity
+                  style={styles.btnSelectActive}
+                  // disabled={selectedCategory.id == -1}
+                  onPress={() => handleUpdateTrans()}
+                >
+                  <Text>Cập nhật</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.btnSelect}>
+                <TouchableOpacity
+                  style={styles.btnSelectActive}
+                  // disabled={selectedCategory.id == -1}
+                  onPress={() => handleAddTrans()}
+                >
+                  <Text>Thêm</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </ScrollView>
           {isModalVisible && <View style={styles.bgModal} />}
         </View>

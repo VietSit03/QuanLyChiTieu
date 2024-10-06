@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace QLCTAPI.Controllers.User
 {
-    [Route("Users/")]
+    [Route("users/")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -18,7 +18,7 @@ namespace QLCTAPI.Controllers.User
             _context = context;
         }
 
-        [HttpGet("CheckExistedEmail")]
+        [HttpGet("checkexistedemail")]
         public async Task<ActionResult> CheckExistedEmail(string email)
         {
             var user = await _context.Users.Where(u => u.Email.Equals(email)).FirstOrDefaultAsync();
@@ -31,7 +31,7 @@ namespace QLCTAPI.Controllers.User
             return Ok(new { ErrorCode = ErrorCode.EXISTEDEMAIL });
         }
 
-        [HttpGet("ActiveUser")]
+        [HttpGet("activeuser")]
         public async Task<ActionResult> ActiveUser(string email)
         {
             var user = await _context.Users.Where(u => u.Email.Equals(email)).FirstOrDefaultAsync();
@@ -56,7 +56,7 @@ namespace QLCTAPI.Controllers.User
             return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS, Message = "Kích hoạt tài khoản thành công, quay lại ứng dụng để tiếp tục" });
         }
 
-        [HttpPut("change-currency")]
+        [HttpPut("changecurrency")]
         public async Task<ActionResult> ChangeCurrency([FromQuery] string code)
         {
             var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -64,15 +64,47 @@ namespace QLCTAPI.Controllers.User
             {
                 var user = await _context.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
 
+                user.Balance = await new Common().ExchangeMoney(user.Balance.Value, user.CurrencyCode, code);
                 user.CurrencyCode = code;
 
                 await _context.SaveChangesAsync();
 
                 var newCur = await _context.CurrencyDefines.Where(cd => cd.CurrencyCode == code).FirstOrDefaultAsync();
 
-                return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS, Data = newCur });
+                var data = new
+                {
+                    Balance = user.Balance,
+                    CurrencyCode = newCur.CurrencyCode,
+                    Symbol = newCur.Symbol,
+                };
+
+                return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS, Data = data });
             }
             return BadRequest(new { ErrorCode = ErrorCode.UPDATEDATAFAIL });
+        }
+
+        [HttpDelete("delete/data")]
+        public async Task<ActionResult> DeleteData()
+        {
+            var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(userID, out var uid))
+            {
+                var user = await _context.Users.Where(u => u.Id == uid).FirstOrDefaultAsync();
+                var trans = await _context.Transactions.Where(t => t.UserId == uid).ToListAsync();
+                var transIds = trans.Select(trans => trans.Id).ToList();
+                var tranImgs = await _context.TransactionImages.Where(ti => transIds.Any(x => x == ti.TransactionId)).ToListAsync();
+                var customCategories = await _context.UserCategoryCustoms.Where(t => t.UserId == uid).ToListAsync();
+
+                user.Balance = 0;
+                _context.Transactions.RemoveRange(trans);
+                _context.TransactionImages.RemoveRange(tranImgs);
+                _context.UserCategoryCustoms.RemoveRange(customCategories);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { ErrorCode = ErrorCode.DELETEDATASUCCESS });
+            }
+            return BadRequest(new { ErrorCode = ErrorCode.DELETEDATAFAIL });
         }
     }
 }

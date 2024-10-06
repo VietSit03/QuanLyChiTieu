@@ -51,9 +51,18 @@ const Currency = ({ navigation }) => {
 
   const fetchCurrency = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Currency/GetAll`;
+    const url = `${API_URL}/currencies/all`;
 
     try {
+      // Kiểm tra xem đã có dữ liệu loại tiền trong AsyncStorage chưa
+      const cachedCurrencies = await AsyncStorage.getItem("currencies");
+      if (cachedCurrencies) {
+        // Nếu có, dùng dữ liệu lưu trữ cục bộ
+        setCurrency(JSON.parse(cachedCurrencies));
+        return;
+      }
+
+      // Nếu chưa có, gọi API để lấy dữ liệu
       const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -78,6 +87,7 @@ const Currency = ({ navigation }) => {
       var apiResponse = await response.json();
       var currencies = apiResponse.data;
 
+      await AsyncStorage.setItem("currencies", JSON.stringify(currencies));
       setCurrency(currencies);
     } catch (error) {
       console.error("Error:", error);
@@ -86,7 +96,7 @@ const Currency = ({ navigation }) => {
 
   const fetchChangeCurrency = async (currencyCode) => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/Users/change-currency?code=${currencyCode}`;
+    const url = `${API_URL}/users/changecurrency?code=${currencyCode}`;
 
     try {
       const response = await fetch(url, {
@@ -113,11 +123,9 @@ const Currency = ({ navigation }) => {
 
       var apiResponse = await response.json();
 
+      await AsyncStorage.setItem("balance", apiResponse.data.balance.toString());
       await AsyncStorage.setItem("currencyBase", apiResponse.data.currencyCode);
-      await AsyncStorage.setItem(
-        "currencySymbol",
-        apiResponse.data.symbol
-      );
+      await AsyncStorage.setItem("currencySymbol", apiResponse.data.symbol);
 
       alert("Thành công", "Đổi loại tiền thành công", () =>
         navigation.navigate("Setting")
@@ -165,6 +173,7 @@ const Currency = ({ navigation }) => {
             keyExtractor={(item) => item.currencyCode}
             renderItem={renderCurrency}
             showsVerticalScrollIndicator={false}
+            initialNumToRender={15}
           />
           <View style={styles.footer}></View>
         </View>

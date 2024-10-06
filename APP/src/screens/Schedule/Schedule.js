@@ -43,6 +43,7 @@ const Schedule = ({ navigation }) => {
         item.id === id ? { ...item, isActive: !item.isActive } : item
       )
     );
+
     async function changeActive() {
       await fetchChangeActive(id);
     }
@@ -54,10 +55,10 @@ const Schedule = ({ navigation }) => {
     useCallback(() => {
       async function fetchData() {
         await fetchSchedule();
+        setLoadingPage(false);
       }
 
       fetchData();
-      setLoadingPage(false);
     }, [])
   );
 
@@ -106,7 +107,7 @@ const Schedule = ({ navigation }) => {
 
   const fetchChangeActive = async (id) => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/schedules/toggle-active?id=${id}`;
+    const url = `${API_URL}/schedules/toggleactive?id=${id}`;
 
     try {
       const response = await fetch(url, {

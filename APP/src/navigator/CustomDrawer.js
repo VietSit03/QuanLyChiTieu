@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -9,11 +9,24 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function CustomDrawer(props) {
   const { themeColors } = useContext(ThemeContext);
+  const [email, setEmail] = useState("");
+  const [balance, setBalance] = useState(NaN);
+  const [curCode, setCurCode] = useState("");
 
   const logOut = async () => {
-    await AsyncStorage.setItem("token", "");
+    await AsyncStorage.clear();
     props.navigation.replace("Login");
   };
+
+  useEffect(() => {
+    async function fetchData() {
+      setEmail(await AsyncStorage.getItem("email"));
+      setBalance(Number(await AsyncStorage.getItem("balance")));
+      setCurCode(await AsyncStorage.getItem("currencyBase"));
+    }
+
+    fetchData();
+  });
 
   return (
     <View
@@ -48,7 +61,22 @@ function CustomDrawer(props) {
           }}
         >
           <Text style={{ fontSize: 12, color: themeColors.primaryColorText }}>
-            Xin chào <Text style={{ fontWeight: "700" }}>Việt</Text>
+            {email}
+          </Text>
+        </View>
+        <View
+          style={{
+            ...styles.headerItem,
+            marginLeft: 10,
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <Text style={{ fontSize: 12, color: themeColors.primaryColorText }}>
+            Số dư:{" "}
+            <Text style={{ fontWeight: "700" }}>
+              {balance.toLocaleString("vi-VN")} {curCode}
+            </Text>
           </Text>
           <TouchableOpacity>
             <Text

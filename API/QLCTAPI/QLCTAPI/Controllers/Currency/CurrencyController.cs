@@ -6,7 +6,7 @@ using QLCTAPI.Models;
 
 namespace QLCTAPI.Controllers.Currency
 {
-    [Route("Currency/")]
+    [Route("currencies/")]
     [ApiController]
     public class CurrencyController : ControllerBase
     {
@@ -17,7 +17,7 @@ namespace QLCTAPI.Controllers.Currency
             _context = context;
         }
 
-        [HttpGet("GetAll")]
+        [HttpGet("all")]
         public async Task<ActionResult> GetAllCurrencies()
         {
             List<CurrencyDTO> listCurrencies = await _context.CurrencyDefines
@@ -42,7 +42,7 @@ namespace QLCTAPI.Controllers.Currency
             }
         }
 
-        [HttpPost("ExchangeCurrency")]
+        [HttpPost("exchange")]
         public async Task<ActionResult> ExchangeCurrency([FromBody] ExchangeCurrencyRequest request)
         {
 

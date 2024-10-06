@@ -13,6 +13,7 @@ import { TextInput } from "react-native-paper";
 import { Image } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isEmptyInput } from "../../common";
+import { Logo } from "../../component/Image";
 
 const ForgetPassword = ({ navigation }) => {
   const [email, setEmail] = useState({ title: "Email", value: "", error: "" });
@@ -36,7 +37,7 @@ const ForgetPassword = ({ navigation }) => {
       return;
     }
 
-    const url = `${API_URL}/ForgetPassword`;
+    const url = `${API_URL}/forgetpassword`;
 
     try {
       const response = await fetch(url, {
@@ -114,7 +115,7 @@ const ForgetPassword = ({ navigation }) => {
     }
 
     var email = await AsyncStorage.getItem("email");
-    const url = `${API_URL}/VerifyCode/VerifyCode?email=${email}&code=${code.value}`;
+    const url = `${API_URL}/verifycodes/verify?email=${email}&code=${code.value}`;
 
     try {
       const response = await fetch(url, {
@@ -142,7 +143,7 @@ const ForgetPassword = ({ navigation }) => {
   };
 
   const CheckVerifyCode = async () => {
-    const url = `${API_URL}/VerifyCode/CheckVerifyCode?email=${email.value}`;
+    const url = `${API_URL}/verifycodes/check?email=${email.value}`;
 
     try {
       const response = await fetch(url, {
@@ -170,10 +171,9 @@ const ForgetPassword = ({ navigation }) => {
       style={styles.background}
     >
       <View style={styles.container}>
-        <Image
-          source={require("../../../assets/icon.png")}
-          style={styles.logo}
-        />
+        <Logo />
+        <View style={{ marginBottom: 40 }}></View>
+        
         {isLoadingAction && (
           <ActivityIndicator style={{ marginVertical: 10 }} size={"large"} />
         )}

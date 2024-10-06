@@ -54,7 +54,7 @@ const CategoryScreen = ({
 
   const fetchCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/CustomCategory/GetAll?type=${type}`;
+    const url = `${API_URL}/customcategories/all?type=${type}`;
 
     try {
       const response = await fetch(url, {
@@ -81,7 +81,6 @@ const CategoryScreen = ({
       var apiResponse = await response.json();
 
       setCategory(apiResponse.data);
-      setLoadingPage(false);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -93,6 +92,7 @@ const CategoryScreen = ({
       async function fetchData() {
         if (isActive) {
           await fetchCategory();
+          setLoadingPage(false);
         }
       }
 
@@ -121,9 +121,8 @@ const CategoryScreen = ({
   };
 
   const deleteCategory = async () => {
-    setLoadingAction(true);
     const token = await AsyncStorage.getItem("token");
-    var url = `${API_URL}/CustomCategory/Delete?id=${selectedItem.id}`;
+    var url = `${API_URL}/customcategories/delete?id=${selectedItem.id}`;
 
     try {
       const response = await fetch(url, {
@@ -153,13 +152,10 @@ const CategoryScreen = ({
             alert("Thao tác thất bại", "Bạn không thể xoá danh mục mặc định.");
           }
         }
-        setLoadingAction(false);
         return;
       }
 
       alert("Xoá thành công", "Xoá danh mục thành công.");
-
-      setLoadingAction(false);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -167,12 +163,14 @@ const CategoryScreen = ({
 
   const handleDeleteItem = () => {
     async function delCategory() {
+      setLoadingAction(true);
       await deleteCategory();
       await fetchCategory();
     }
 
     setModalVisible(false);
     delCategory();
+    setLoadingAction(false);
   };
 
   const Category = ({ item, drag }) => {

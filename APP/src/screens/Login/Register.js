@@ -12,6 +12,7 @@ import { TextInput, Text } from "react-native-paper";
 import { emailRegex, passwordRegex } from "../../regex";
 import { API_URL } from "@env";
 import { encrypt, isEmptyInput } from "../../common";
+import { Logo } from "../../component/Image";
 
 const Register = ({ navigation }) => {
   const [isLoadingAction, setIsLoadingAction] = useState(false);
@@ -43,7 +44,7 @@ const Register = ({ navigation }) => {
 
   const checkEmail = async () => {
     const checkExistedEmail = async () => {
-      const url = `${API_URL}/Users/CheckExistedEmail?email=${email.value}`;
+      const url = `${API_URL}/users/checkexistedemail?email=${email.value}`;
 
       try {
         const response = await fetch(url, {
@@ -113,7 +114,7 @@ const Register = ({ navigation }) => {
 
   const fetchRegister = async () => {
     setIsLoadingAction(true);
-    const url = `${API_URL}/Register`;
+    const url = `${API_URL}/register`;
     const hashedPassword = encrypt(password.value);
 
     try {
@@ -130,7 +131,6 @@ const Register = ({ navigation }) => {
       });
 
       setIsLoadingAction(false);
-      console.log(response);
 
       if (!response.ok) {
         Alert.alert("Lỗi", "Xảy ra lỗi. Vui lòng thử lại sau.");
@@ -177,10 +177,9 @@ const Register = ({ navigation }) => {
       style={styles.background}
     >
       <View style={styles.container}>
-        <Image
-          source={require("../../../assets/icon.png")}
-          style={styles.logo}
-        />
+        <Logo />
+        <View style={{ marginBottom: 40 }}></View>
+        
         {isLoadingAction && (
           <ActivityIndicator style={{ marginVertical: 10 }} size={"large"} />
         )}
@@ -309,11 +308,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#f5f5f5",
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 40,
   },
   input: {
     width: "90%",

@@ -6,7 +6,7 @@ using System.Net.Http;
 
 namespace QLCTAPI.Controllers.VerifyCode
 {
-    [Route("VerifyCode")]
+    [Route("verifycodes/")]
     [ApiController]
     public class VerifyCodeController : ControllerBase
     {
@@ -17,7 +17,7 @@ namespace QLCTAPI.Controllers.VerifyCode
             _context = context;
         }
 
-        [HttpGet("VerifyCode")]
+        [HttpGet("verify")]
         public async Task<ActionResult> VerifyCode(string email, string code)
         {
             if (await new Common().VerifyCode(email, code))
@@ -28,7 +28,7 @@ namespace QLCTAPI.Controllers.VerifyCode
             return BadRequest(new { ErrorCode = ErrorCode.VERIFYCODEFAIL });
         }
 
-        [HttpGet("VerifyCodeByLink")]
+        [HttpGet("verifycodebylink")]
         public async Task<ActionResult> VerifyCodeByLink(string email, string code)
         {
             if (await new Common().VerifyCode(email, code))
@@ -39,7 +39,7 @@ namespace QLCTAPI.Controllers.VerifyCode
             return BadRequest(new { ErrorCode = ErrorCode.VERIFYCODEFAIL, Message = "Xảy ra lỗi, mã xác nhận đã hết hạn" });
         }
 
-        [HttpGet("CheckVerifyCode")]
+        [HttpGet("check")]
         public async Task<ActionResult> CheckVerifyCode([FromQuery] string email)
         {
             var verifyCode = await _context.VerifyCodes.Where(vc => vc.Email == email && vc.ExpiredDate > DateTime.Now).FirstOrDefaultAsync();
