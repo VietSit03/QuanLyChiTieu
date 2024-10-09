@@ -13,4 +13,12 @@
         public string Note { get; set; }
         public List<string> ImgSrc { get; set; }
     }
+
+    public class SearchTransRequest
+    {
+        public string Type { get; set; }
+        public string Key { get; set; }
+        public string FromDate { get; set; }
+        public string ToDate { get; set; }
+    }
 }

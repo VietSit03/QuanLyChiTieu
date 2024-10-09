@@ -345,9 +345,10 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    alignItems: "flex-end",
+    alignItems: "center",
     justifyContent: "space-between",
     height: 92,
+    paddingTop: 50,
     paddingBottom: 12,
   },
   title: {

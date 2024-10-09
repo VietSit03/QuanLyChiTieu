@@ -3,20 +3,20 @@
   "WorkspaceRootPath": "D:\\Doan\\QuanLyChiTieu\\API\\QLCTAPI\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|d:\\doan\\quanlychitieu\\api\\qlctapi\\qlctapi\\controllers\\user\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|solutionrelative:qlctapi\\controllers\\user\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|d:\\doan\\quanlychitieu\\api\\qlctapi\\qlctapi\\controllers\\transaction\\transactioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|solutionrelative:qlctapi\\controllers\\transaction\\transactioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|d:\\doan\\quanlychitieu\\api\\qlctapi\\qlctapi\\controllers\\usercategorycustom\\usercategorycustomscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|solutionrelative:qlctapi\\controllers\\usercategorycustom\\usercategorycustomscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|d:\\doan\\quanlychitieu\\api\\qlctapi\\qlctapi\\controllers\\transaction\\request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|solutionrelative:qlctapi\\controllers\\transaction\\request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|d:\\doan\\quanlychitieu\\api\\qlctapi\\qlctapi\\controllers\\user\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|solutionrelative:qlctapi\\controllers\\user\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|d:\\doan\\quanlychitieu\\api\\qlctapi\\qlctapi\\controllers\\usercategorycustom\\usercategorycustomscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|solutionrelative:qlctapi\\controllers\\usercategorycustom\\usercategorycustomscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{770BD0D6-39D9-47ED-A94D-B837C03DFCC3}|QLCTAPI\\QLCTAPI.csproj|d:\\doan\\quanlychitieu\\api\\qlctapi\\qlctapi\\controllers\\schedule\\schedulescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -78,7 +78,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 1110,
-          "SelectedChildIndex": 10,
+          "SelectedChildIndex": 16,
           "Children": [
             {
               "$type": "Bookmark",
@@ -90,13 +90,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "Request.cs",
               "DocumentMoniker": "D:\\Doan\\QuanLyChiTieu\\API\\QLCTAPI\\QLCTAPI\\Controllers\\Transaction\\Request.cs",
               "RelativeDocumentMoniker": "QLCTAPI\\Controllers\\Transaction\\Request.cs",
               "ToolTip": "D:\\Doan\\QuanLyChiTieu\\API\\QLCTAPI\\QLCTAPI\\Controllers\\Transaction\\Request.cs",
               "RelativeToolTip": "QLCTAPI\\Controllers\\Transaction\\Request.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAARAAAA",
+              "ViewState": "AQIAAAUAAAAAAAAAAAAAwBIAAAAoAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-06T00:12:09.609Z",
               "EditorCaption": ""
@@ -159,8 +159,7 @@
               "RelativeToolTip": "QLCTAPI\\Controllers\\VerifyCode\\VerifyCodeController.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAACkAAAAaAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-05T14:51:50.687Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-05T14:51:50.687Z"
             },
             {
               "$type": "Document",
@@ -188,16 +187,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "UserController.cs",
               "DocumentMoniker": "D:\\Doan\\QuanLyChiTieu\\API\\QLCTAPI\\QLCTAPI\\Controllers\\User\\UserController.cs",
               "RelativeDocumentMoniker": "QLCTAPI\\Controllers\\User\\UserController.cs",
               "ToolTip": "D:\\Doan\\QuanLyChiTieu\\API\\QLCTAPI\\QLCTAPI\\Controllers\\User\\UserController.cs",
               "RelativeToolTip": "QLCTAPI\\Controllers\\User\\UserController.cs",
-              "ViewState": "AQIAAE0AAAAAAAAAAAAcwGMAAABBAAAA",
+              "ViewState": "AQIAAFAAAAAAAAAAAAAcwGMAAABBAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-05T08:22:43.108Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-05T08:22:43.108Z"
             },
             {
               "$type": "Document",
@@ -209,8 +207,7 @@
               "RelativeToolTip": "QLCTAPI\\Controllers\\Login\\LoginController.cs",
               "ViewState": "AQIAAF4AAAAAAAAAAAAuwHUAAAAzAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-04T15:42:05.31Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-04T15:42:05.31Z"
             },
             {
               "$type": "Document",
@@ -250,7 +247,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "UserCategoryCustomsController.cs",
               "DocumentMoniker": "D:\\Doan\\QuanLyChiTieu\\API\\QLCTAPI\\QLCTAPI\\Controllers\\UserCategoryCustom\\UserCategoryCustomsController.cs",
               "RelativeDocumentMoniker": "QLCTAPI\\Controllers\\UserCategoryCustom\\UserCategoryCustomsController.cs",
@@ -258,18 +255,17 @@
               "RelativeToolTip": "QLCTAPI\\Controllers\\UserCategoryCustom\\UserCategoryCustomsController.cs",
               "ViewState": "AQIAABcAAAAAAAAAAAAqwCYAAAARAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-04T15:42:05.348Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-04T15:42:05.348Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "TransactionController.cs",
               "DocumentMoniker": "D:\\Doan\\QuanLyChiTieu\\API\\QLCTAPI\\QLCTAPI\\Controllers\\Transaction\\TransactionController.cs",
               "RelativeDocumentMoniker": "QLCTAPI\\Controllers\\Transaction\\TransactionController.cs",
               "ToolTip": "D:\\Doan\\QuanLyChiTieu\\API\\QLCTAPI\\QLCTAPI\\Controllers\\Transaction\\TransactionController.cs",
               "RelativeToolTip": "QLCTAPI\\Controllers\\Transaction\\TransactionController.cs",
-              "ViewState": "AQIAAI4AAAAAAAAAAAAcwJ4AAAAIAAAA",
+              "ViewState": "AQIAAPYBAAAAAAAAAAAuwP4BAAAkAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-04T15:42:05.365Z",
               "EditorCaption": ""
@@ -296,8 +292,7 @@
               "RelativeToolTip": "QLCTAPI\\Controllers\\Schedule\\SchedulesController.cs",
               "ViewState": "AQIAAGUAAAAAAAAAAAAgwK0AAAAYAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-04T14:05:34.133Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-04T14:05:34.133Z"
             }
           ]
         }
