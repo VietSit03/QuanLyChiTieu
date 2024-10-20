@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../../Theme";
-import { LoadingPage } from "../../component/Loading";
+import { LoadingAction, LoadingPage } from "../../component/Loading";
 import Icon from "react-native-vector-icons/Ionicons";
 import { BackButton } from "../../component/Button";
 import { Calendar } from "react-native-calendars";
@@ -81,6 +81,7 @@ const Transaction = React.memo(
 
 const SearchTransaction = ({ navigation }) => {
   const { themeColors } = useContext(ThemeContext);
+  const [isLoadingAction, setIsLoadingAction] = useState(false);
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [time, setTime] = useState({ fromDate: "", toDate: "" });
   const [selectDate, setSelectDate] = useState(false);
@@ -98,6 +99,12 @@ const SearchTransaction = ({ navigation }) => {
 
     fetchData();
   }, []);
+
+  const handleSearch = async () => {
+    setIsLoadingAction(true);
+    await fetchSearch();
+    setIsLoadingAction(false);
+  };
 
   const fetchSearch = async () => {
     const token = await AsyncStorage.getItem("token");
@@ -198,7 +205,7 @@ const SearchTransaction = ({ navigation }) => {
             </View>
             <TouchableOpacity
               onPress={() => {
-                fetchSearch();
+                handleSearch();
               }}
               style={styles.filterButton}
             >
@@ -302,14 +309,49 @@ const SearchTransaction = ({ navigation }) => {
                 Từ {time.fromDate} đến {time.toDate}
               </Text>
             </View>
-            <View style={styles.list}>
-              <FlatList
-                data={transaction}
-                renderItem={renderTransaction}
-                keyExtractor={(item, index) => index.toString()}
-                scrollEnabled={false}
-              />
-            </View>
+            {isLoadingAction ? (
+              <LoadingAction />
+            ) : (
+              <>
+                {!transaction ? (
+                  <View style={styles.hintSearch}>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        color: "gray",
+                        textAlign: "center",
+                      }}
+                    >
+                      Tìm kiếm theo số tiền hoặc danh mục
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    {transaction.length == 0 && (
+                      <View style={styles.hintSearch}>
+                        <Text
+                          style={{
+                            fontSize: 18,
+                            color: "gray",
+                            textAlign: "center",
+                          }}
+                        >
+                          Không có giao dịch nào
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                )}
+                <View style={styles.list}>
+                  <FlatList
+                    data={transaction}
+                    renderItem={renderTransaction}
+                    keyExtractor={(item, index) => index.toString()}
+                    scrollEnabled={false}
+                  />
+                </View>
+              </>
+            )}
           </ScrollView>
           <Modal visible={selectDate} animationType="slide" transparent={true}>
             <TouchableOpacity
@@ -443,6 +485,7 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 1,
+    marginTop: 20,
     backgroundColor: "white",
     borderRadius: 3,
     marginBottom: 10,
@@ -493,5 +536,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
+  },
+  hintSearch: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 50,
+    marginHorizontal: 60,
   },
 });

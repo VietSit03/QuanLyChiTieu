@@ -2,6 +2,7 @@ import { API_URL, CRYPTOJS_KEY } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CryptoJS from "crypto-js";
 import { Alert } from "react-native";
+import * as Notifications from "expo-notifications";
 
 export const encrypt = (text) => {
   var encrypted = CryptoJS.HmacSHA256(text, CRYPTOJS_KEY).toString().slice(7);
@@ -89,8 +90,34 @@ export const formatMoney = (money) => {
   if (money < 1_000_000) {
     return money.toLocaleString("vi-VN");
   } else if (money >= 1_000_000 && money < 1_000_000_000) {
-    return (money / 1_000_000).toFixed(3).replace(".", ",") + " Tr";
+    return (
+      parseFloat((money / 1_000_000).toFixed(3))
+        .toString()
+        .replace(".", ",") + " Tr"
+    );
   } else {
-    return (money / 1_000_000_000).toFixed(3).replace(".", ",") + " T";
+    return (
+      parseFloat((money / 1_000_000_000).toFixed(3))
+        .toString()
+        .replace(".", ",") + " T"
+    );
+  }
+};
+
+export const setScheduleNotification = async (title, body, trigger) => {
+  const id = await Notifications.scheduleNotificationAsync({
+    content: {
+      title: title,
+      body: body,
+    },
+    trigger,
+  });
+
+  return id;
+};
+
+export const cancelNotification = async (notificationId) => {
+  if (notificationId) {
+    await Notifications.cancelScheduledNotificationAsync(notificationId);
   }
 };

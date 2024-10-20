@@ -2,6 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { ThemeContext } from "../Theme";
@@ -107,6 +108,23 @@ function CustomDrawer(props) {
             style={{ ...styles.itemText, color: themeColors.primaryColorText }}
           >
             Trang chủ
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() => props.navigation.navigate("Chart")}
+        >
+          <View style={styles.icon}>
+            <FontAwesome6
+              name="chart-simple"
+              size={18}
+              color={themeColors.primaryColorText}
+            />
+          </View>
+          <Text
+            style={{ ...styles.itemText, color: themeColors.primaryColorText }}
+          >
+            Biểu đồ
           </Text>
         </TouchableOpacity>
         <TouchableOpacity

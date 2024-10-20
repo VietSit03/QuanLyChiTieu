@@ -42,6 +42,7 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
                     ImgSrc = x.cd.ImgSrc,
                     Name = x.ucc.CategoryName,
                     Color = x.ucc.CategoryColor,
+                    IsDefault = x.ucc.IsDefault,
                 })
                 .Take(num).ToListAsync();
 
@@ -71,6 +72,7 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
                         ImgSrc = x.cd.ImgSrc,
                         Name = x.ucc.CategoryName,
                         Color = x.ucc.CategoryColor,
+                        IsDefault = x.ucc.IsDefault,
                     })
                     .ToListAsync();
 
@@ -110,7 +112,33 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
             }
 
             return BadRequest(new Response { ErrorCode = ErrorCode.CREATEDATAFAIL });
+        }
 
+        [HttpPost("changeorder")]
+        public async Task<ActionResult> ChangeOrder([FromBody] ChangeOrderUCCRequest request)
+        {
+            var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (Guid.TryParse(userID, out Guid userId))
+            {
+                var categories = request.Categories;
+
+                foreach(var item in categories)
+                {
+                    var category = await _context.UserCategoryCustoms.Where(ucc => ucc.Id == item.Id && !ucc.IsDefault.Value).FirstOrDefaultAsync();
+
+                    if (category != null)
+                    {
+                        category.CategoryOrder = item.CategoryOrder;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new Response { ErrorCode = ErrorCode.UPDATEDATASUCCESS });
+            }
+
+            return BadRequest(new Response { ErrorCode = ErrorCode.UPDATEDATAFAIL });
         }
 
         [HttpPost("delete")]

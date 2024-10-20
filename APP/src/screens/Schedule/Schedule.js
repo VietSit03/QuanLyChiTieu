@@ -15,8 +15,9 @@ import { ThemeContext } from "../../Theme";
 import { LoadingPage } from "../../component/Loading";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@env";
-import { alert } from "../../common";
+import { alert, cancelNotification, setScheduleNotification } from "../../common";
 import { useFocusEffect } from "@react-navigation/native";
+import dayjs from "dayjs";
 
 const ScheduleSwitch = React.memo(
   ({ item, toggleSwitch, color }) => {
@@ -134,8 +135,19 @@ const Schedule = ({ navigation }) => {
             item.id === id ? { ...item, isActive: !item.isActive } : item
           )
         );
+
         alert("Lỗi", "Xảy ra lỗi", () => navigation.navigate("Login"));
         return;
+      }
+
+      const apiResponse = await response.json();
+
+      if (apiResponse.data.notificationId) {
+        await cancelNotification(apiResponse.data.notificationId);
+      }
+
+      if (apiResponse.data.notification && apiResponse.data.schedule) {
+        await fetchAddNotification(apiResponse.data.notification, apiResponse.data.schedule);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -146,7 +158,7 @@ const Schedule = ({ navigation }) => {
     return (
       <Pressable
         style={styles.rowFront}
-        onPress={() => navigation.navigate("EditSchedule", {id: item.id})}
+        onPress={() => navigation.navigate("EditSchedule", { id: item.id })}
       >
         <Text>{item.name}</Text>
         <ScheduleSwitch
@@ -156,6 +168,46 @@ const Schedule = ({ navigation }) => {
         />
       </Pressable>
     );
+  };
+
+  const fetchAddNotification = async (notification, schedule) => {
+    const token = await AsyncStorage.getItem("token");
+    const url = `${API_URL}/schedules/add/notification`;
+    const notificationId = await setScheduleNotification(
+      "Thông báo lịch thanh toán",
+      `Bạn có lịch thanh toán ${schedule.name}. Hãy truy cập ứng dụng để hoàn tất thanh toán.`,
+      dayjs(notification.dateNotificate, "YYYY-MM-DD HH:mm").toDate())
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          notificationId: notificationId,
+          scheduleId: notification.scheduleId,
+          dateNotificate: notification.dateNotificate
+        })
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+          return;
+        }
+        alert("Lỗi", "Xảy ra lỗi", () => navigation.navigate("Login"));
+        return;
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const renderHiddenItem = ({ item }) => (
@@ -203,6 +255,12 @@ const Schedule = ({ navigation }) => {
         }
         alert("Lỗi", "Xảy ra lỗi khi xoá lịch thanh toán");
         return;
+      }
+
+      const apiResponse = await response.json();
+
+      if (apiResponse.data.notificationId) {
+        await cancelNotification(apiResponse.data.notificationId);
       }
 
       alert(
