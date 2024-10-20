@@ -13,6 +13,7 @@
         public string? ImgSrc { get; set; }
         public string? Name { get; set; }
         public string? Color { get; set; }
+        public bool? IsDefault { get; set; }
 
     }
 }

@@ -21,6 +21,8 @@ public partial class QuanLyChiTieuContext : DbContext
 
     public virtual DbSet<FrequencyDefine> FrequencyDefines { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     public virtual DbSet<PurposeDefine> PurposeDefines { get; set; }
 
     public virtual DbSet<Schedule> Schedules { get; set; }
@@ -45,7 +47,7 @@ public partial class QuanLyChiTieuContext : DbContext
     {
         modelBuilder.Entity<CategoryDefine>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC27EA9ED26F");
+            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC2771698B02");
 
             entity.ToTable("CategoryDefine");
 
@@ -61,7 +63,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<CurrencyDefine>(entity =>
         {
-            entity.HasKey(e => e.CurrencyCode).HasName("PK__Currency__408426BE5C50268E");
+            entity.HasKey(e => e.CurrencyCode).HasName("PK__Currency__408426BECB4B0424");
 
             entity.ToTable("CurrencyDefine");
 
@@ -77,7 +79,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<FrequencyDefine>(entity =>
         {
-            entity.HasKey(e => e.FrequencyId).HasName("PK__Frequenc__592474B8DA5BFCE5");
+            entity.HasKey(e => e.FrequencyId).HasName("PK__Frequenc__592474B87C8B5C01");
 
             entity.ToTable("FrequencyDefine", tb => tb.HasTrigger("trg_AutoIncrementOrderFrequency"));
 
@@ -89,9 +91,25 @@ public partial class QuanLyChiTieuContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC27164F3EB3");
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("ID");
+            entity.Property(e => e.DateNotificate).HasColumnType("datetime");
+            entity.Property(e => e.ScheduleId).HasColumnName("ScheduleID");
+            entity.Property(e => e.Status)
+                .HasMaxLength(1)
+                .IsUnicode(false);
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+        });
+
         modelBuilder.Entity<PurposeDefine>(entity =>
         {
-            entity.HasKey(e => e.Code).HasName("PK__PurposeD__A25C5AA6104240B4");
+            entity.HasKey(e => e.Code).HasName("PK__PurposeD__A25C5AA62FA83541");
 
             entity.ToTable("PurposeDefine");
 
@@ -104,7 +122,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<Schedule>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Schedule__3214EC2723707D81");
+            entity.HasKey(e => e.Id).HasName("PK__Schedule__3214EC27F8516C40");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.CategoryCustomId).HasColumnName("CategoryCustomID");
@@ -125,7 +143,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC270A159A66");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC274AF976D7");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.CategoryCustomId).HasColumnName("CategoryCustomID");
@@ -147,7 +165,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<TransactionImage>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC27E7025C99");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC2719D69853");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.ImgSrc).HasMaxLength(2048);
@@ -156,11 +174,11 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC27B2BAF408");
+            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC27B5B0609E");
 
             entity.ToTable(tb => tb.HasTrigger("trg_AfterInsertUser"));
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534DB588A7C").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534C9B4A39C").IsUnique();
 
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("(newid())")
@@ -182,7 +200,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<UserCategoryCustom>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User_Cat__3214EC27A9E68AF3");
+            entity.HasKey(e => e.Id).HasName("PK__User_Cat__3214EC275AA623E6");
 
             entity.ToTable("User_Category_Custom");
 
@@ -200,7 +218,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<UserToken>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__UserToke__1788CCAC8253AEB6");
+            entity.HasKey(e => e.UserId).HasName("PK__UserToke__1788CCACB3FBB6D0");
 
             entity.Property(e => e.UserId)
                 .ValueGeneratedNever()
@@ -211,7 +229,7 @@ public partial class QuanLyChiTieuContext : DbContext
 
         modelBuilder.Entity<VerifyCode>(entity =>
         {
-            entity.HasKey(e => e.Email).HasName("PK__VerifyCo__A9D1053580B0D674");
+            entity.HasKey(e => e.Email).HasName("PK__VerifyCo__A9D105354E3701BF");
 
             entity.ToTable("VerifyCode");
 

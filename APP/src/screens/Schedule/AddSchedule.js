@@ -17,7 +17,8 @@ import { API_URL } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LoadingPage } from "../../component/Loading";
 import { useFocusEffect } from "@react-navigation/native";
-import { alert, isEmptyInput } from "../../common";
+import { alert, isEmptyInput, setScheduleNotification } from "../../common";
+import dayjs from "dayjs";
 
 const AddSchedule = ({ route, navigation }) => {
   const { themeColors } = useContext(ThemeContext);
@@ -173,23 +174,20 @@ const AddSchedule = ({ route, navigation }) => {
     const token = await AsyncStorage.getItem("token");
     const url = `${API_URL}/schedules/add`;
     const startDate =
-      fromDate.getFullYear() +
-      "-" +
-      String(fromDate.getMonth() + 1).padStart(2, "0") +
-      "-" +
-      String(fromDate.getDate()).padStart(2, "0") +
-      " " +
-      String(fromTime.getHours()).padStart(2, "0") +
-      ":" +
-      String(fromTime.getMinutes()).padStart(2, "0");
-
-    const endDate =
-      toDate &&
-      toDate.getFullYear() +
-        "-" +
-        String(toDate.getMonth() + 1).padStart(2, "0") +
-        "-" +
-        String(toDate.getDate()).padStart(2, "0");
+      fromDate && fromTime
+        ? fromDate.toLocaleDateString("en-CA") +
+          " " +
+          fromTime.toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : null;
+    const endDate = toDate ? toDate.toLocaleDateString("en-CA") : null;
+    const notificationId = await setScheduleNotification(
+      "Thông báo lịch thanh toán",
+      `Bạn có lịch thanh toán ${name.value}. Hãy truy cập ứng dụng để hoàn tất thanh toán.`,
+      dayjs(startDate, "YYYY-MM-DD HH:mm").toDate()
+    );
 
     try {
       const response = await fetch(url, {
@@ -199,6 +197,7 @@ const AddSchedule = ({ route, navigation }) => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          notificationId: notificationId,
           categoryCustomId: category.categoryId,
           name: name.value,
           type: checked,

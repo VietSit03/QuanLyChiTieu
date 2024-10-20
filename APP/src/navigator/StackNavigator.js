@@ -22,6 +22,7 @@ import ListByCategory from "../screens/Transaction/ListByCategory";
 import TransactionDetail from "../screens/Transaction/TransactionDetail";
 import EditSchedule from "../screens/Schedule/EditSchedule";
 import SearchTransaction from "../screens/Transaction/SearchTransaction";
+import Chart from "../screens/Chart/Chart";
 
 const Stack = createStackNavigator();
 
@@ -150,6 +151,11 @@ function StackNavigator({ navigation }) {
         name="SearchTransaction"
         component={SearchTransaction}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Chart"
+        component={Chart}
+        options={drawer("Biểu đồ")}
       />
     </Stack.Navigator>
   );

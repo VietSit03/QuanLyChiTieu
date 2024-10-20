@@ -134,6 +134,48 @@ namespace QLCTAPI.Controllers.Schedule
 
                 await _context.SaveChangesAsync();
 
+                var notification = new Notification
+                {
+                    Id = request.NotificationId,
+                    UserId = uId,
+                    ScheduleId = schedule.Id,
+                    DateNotificate = schedule.StartDate,
+                    Status = "A"
+                };
+
+                _context.Notifications.Add(notification);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { ErrorCode = ErrorCode.CREATEDATASUCCESS });
+            }
+            else
+            {
+                return BadRequest(new { ErrorCode = ErrorCode.CREATEDATAFAIL });
+            }
+        }
+
+        [HttpPost("add/notification")]
+        [CustomAuthorize]
+        public async Task<ActionResult> AddNotification([FromBody] NotificationRequest request)
+        {
+            var useID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (Guid.TryParse(useID, out var uId))
+            {
+                var notification = new Models.Notification
+                {
+                    Id = request.NotificationId,
+                    UserId = uId,
+                    ScheduleId = request.ScheduleId,
+                    DateNotificate = request.DateNotificate,
+                    Status = "A"
+                };
+
+                _context.Notifications.Add(notification);
+
+                await _context.SaveChangesAsync();
+
                 return Ok(new { ErrorCode = ErrorCode.CREATEDATASUCCESS });
             }
             else
@@ -163,7 +205,37 @@ namespace QLCTAPI.Controllers.Schedule
 
                 await _context.SaveChangesAsync();
 
-                return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS });
+                var notification = new Notification
+                {
+                    Id = request.NotificationId,
+                    UserId = uId,
+                    ScheduleId = schedule.Id,
+                    DateNotificate = schedule.StartDate,
+                    Status = "A"
+                };
+
+                _context.Notifications.Add(notification);
+
+                var oldNotification = await _context.Notifications
+                    .Where(x => x.UserId == uId && x.ScheduleId == schedule.Id && x.Status == "A" || x.Status == "I")
+                    .OrderByDescending(x => x.DateNotificate)
+                    .FirstOrDefaultAsync();
+
+                if (oldNotification != null)
+                {
+                    oldNotification.Status = "C";
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    ErrorCode = ErrorCode.UPDATEDATASUCCESS,
+                    Data = new
+                    {
+                        NotificationId = oldNotification != null ? oldNotification.Id : "",
+                    }
+                });
             }
             else
             {
@@ -186,11 +258,50 @@ namespace QLCTAPI.Controllers.Schedule
                     return NotFound(new { ErrorCode = ErrorCode.NOTFOUND });
                 }
 
-                schedule.IsActive = !schedule.IsActive;
+                var notification = new Notification();
+                if ((bool)schedule.IsActive)
+                {
+                    notification = await _context.Notifications
+                        .Where(x => x.UserId == uId && x.ScheduleId == schedule.Id && x.Status == "A")
+                        .OrderByDescending(x => x.DateNotificate)
+                        .FirstOrDefaultAsync();
 
-                await _context.SaveChangesAsync();
+                    notification.Status = "I";
 
-                return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS });
+                    schedule.IsActive = !schedule.IsActive;
+
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        ErrorCode = ErrorCode.UPDATEDATASUCCESS,
+                        Data = new
+                        {
+                            NotificationId = notification != null ? notification.Id : "",
+                        }
+                    });
+                }
+                else
+                {
+                    notification = await _context.Notifications
+                        .Where(x => x.UserId == uId && x.ScheduleId == schedule.Id && x.Status == "I")
+                        .OrderByDescending(x => x.DateNotificate)
+                        .FirstOrDefaultAsync();
+
+                    schedule.IsActive = !schedule.IsActive;
+
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        ErrorCode = ErrorCode.UPDATEDATASUCCESS,
+                        Data = new
+                        {
+                            Notification = notification,
+                            Schedule = schedule,
+                        }
+                    });
+                }
             }
             else
             {
@@ -215,9 +326,21 @@ namespace QLCTAPI.Controllers.Schedule
 
                 _context.Schedules.Remove(schedule);
 
+                var notifications = await _context.Notifications.Where(x => x.UserId == uId && x.ScheduleId == schedule.Id).ToListAsync();
+                var notificationId = notifications.OrderByDescending(x => x.DateNotificate).FirstOrDefault()?.Id ?? "";
+
+                _context.Notifications.RemoveRange(notifications);
+
                 await _context.SaveChangesAsync();
 
-                return Ok(new { ErrorCode = ErrorCode.DELETEDATASUCCESS });
+                return Ok(new
+                {
+                    ErrorCode = ErrorCode.DELETEDATASUCCESS,
+                    Data = new
+                    {
+                        NotificationId = notificationId,
+                    }
+                });
             }
             else
             {

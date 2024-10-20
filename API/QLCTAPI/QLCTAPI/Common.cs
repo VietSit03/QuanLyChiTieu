@@ -107,5 +107,29 @@ namespace QLCTAPI
 
             return Math.Round((decimal)exchangeMoney, 4);
         }
+
+        public async Task<DateTime> GetDateNotification(DateTime dateTime, string frequencyId)
+        {
+            var dateNotificate = new DateTime();
+            switch (frequencyId)
+            {
+                case "MOTLAN":
+                    dateNotificate = dateTime;
+                    break;
+                case "HANGNGAY":
+                    dateNotificate = dateTime.AddDays(1);
+                    break;
+                case "HANGTUAN":
+                    dateNotificate = dateTime.AddDays(7);
+                    break;
+                case "HANGTHANG":
+                    dateNotificate = dateTime.AddMonths(1);
+                    break;
+                case "HANGNAM":
+                    dateNotificate = dateTime.AddYears(1);
+                    break;
+            }
+            return dateNotificate;
+        }
     }
 }

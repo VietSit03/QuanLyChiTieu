@@ -10,15 +10,92 @@ import Register from "./src/screens/Login/Register";
 import ForgetPassword from "./src/screens/Login/ForgetPassword";
 import { ActivityIndicator } from "react-native";
 import ChangePassword from "./src/screens/Login/ChangePassword";
+import registerNNPushToken from "native-notify";
+import { APP_ID, APP_TOKEN } from "@env";
+import * as Notifications from "expo-notifications";
+import axios from "axios";
 
 const Stack = createStackNavigator();
 
 export default function App() {
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [isLogin, setIsLogin] = useState(false);
+
+  registerNNPushToken(APP_ID, APP_TOKEN);
+
   useEffect(() => {
     checkToken();
+    registerForPushNotificationsAsync();
+    setTimeout(async () => {
+      sendPushNotification(
+        await AsyncStorage.getItem("deviceToken"),
+        "Thông báo tự động",
+        "Đây là thông báo gửi đến một số thiết bị!"
+      );
+
+      scheduleNotification();
+    }, 1000);
   }, []);
+
+  const registerForPushNotificationsAsync = async () => {
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    // Nếu chưa có quyền, yêu cầu quyền
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    // Nếu người dùng không cấp quyền, dừng lại
+    if (finalStatus !== "granted") {
+      alert("Failed to get push token for push notification!");
+      return;
+    }
+
+    // Lấy mã thông báo đẩy
+    const token = await Notifications.getExpoPushTokenAsync();
+    await AsyncStorage.setItem("deviceToken", token.data);
+  };
+
+  const sendPushNotification = async (device, title, body) => {
+    const message = {
+      to: device,
+      sound: "default",
+      title: title,
+      body: body,
+      data: { someData: "goes here" },
+    };
+
+    try {
+      const response = await axios.post(
+        "https://exp.host/--/api/v2/push/send",
+        message
+      );
+      console.log("Notification sent:", response.data);
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  };
+
+  const scheduleNotification = async () => {
+    const trigger = new Date();
+    trigger.setSeconds(trigger.getSeconds() + 20);
+
+    console.log(trigger);
+    if (trigger < new Date()) {
+      console.log("a");
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Thông báo đặt lịch",
+        body: "Đây là thông báo gửi đến một số thiết bị!",
+      },
+      trigger,
+    });
+  };
 
   const checkToken = async () => {
     var token = await AsyncStorage.getItem("token");
@@ -48,7 +125,7 @@ export default function App() {
   return (
     <>
       {isLoadingPage ? (
-        <ActivityIndicator style={{marginTop: 50}} size={"large"} />
+        <ActivityIndicator style={{ marginTop: 50 }} size={"large"} />
       ) : (
         <>
           {isLogin ? (
