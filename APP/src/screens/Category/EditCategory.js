@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Pressable,
@@ -9,8 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Dimensions,
-  Alert,
+  Dimensions
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { RadioButton } from "react-native-paper";
@@ -20,7 +18,7 @@ import { ThemeContext } from "../../Theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@env";
 import { LoadingPage } from "../../component/Loading";
-import { alert, checkToken, isEmptyInput } from "../../common";
+import { alert, isEmptyInput } from "../../common";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -61,7 +59,15 @@ const Color = React.memo(
 );
 
 const Icon = React.memo(
-  ({ item, handle, selectedColor, selectedIcon, themeColors, navigation, type }) => {
+  ({
+    item,
+    handle,
+    selectedColor,
+    selectedIcon,
+    themeColors,
+    navigation,
+    type,
+  }) => {
     var size = screenWidth / 6;
     if (item.empty) {
       return <View style={{ width: size + 20, height: size + 20 }} />;
@@ -81,7 +87,7 @@ const Icon = React.memo(
                 alignItems: "center",
               }}
               onPress={() =>
-                navigation.navigate("IconCategory", { type: type, page: "ADD" })
+                navigation.navigate("IconCategory", { type: type, page: "EDIT" })
               }
             >
               <Ionicons name="add-outline" size={40} color="white" />
@@ -130,9 +136,11 @@ const Icon = React.memo(
   }
 );
 
-const AddCategory = ({ navigation, route }) => {
+const EditCategory = ({ navigation, route }) => {
   const { themeColors } = useContext(ThemeContext);
   const type = route.params?.type || "CHI";
+  const [editCat, setEditCat] = useState();
+  const [category, setCategory] = useState();
   const [loadingPage, setLoadingPage] = useState(true);
   const [name, setName] = useState({
     title: "Tên danh mục",
@@ -145,7 +153,6 @@ const AddCategory = ({ navigation, route }) => {
   const [checked, setChecked] = useState(type);
   const [selectedColor, setSelectedColor] = useState();
   const [selectedIcon, setSelectedIcon] = useState(null);
-  const [category, setCategory] = useState();
 
   const chunkArray = (arr, chunkSize) => {
     const result = [];
@@ -224,7 +231,7 @@ const AddCategory = ({ navigation, route }) => {
     );
   };
 
-  const handleAddCategory = () => {
+  const handleUpdateCategory = () => {
     if (isEmptyInput(name, setName)) {
       return;
     }
@@ -233,19 +240,25 @@ const AddCategory = ({ navigation, route }) => {
       return;
     }
 
-    async function add() {
-      await fetchAddCategory();
+    async function update() {
+      await fetchUpdateCategory();
     }
 
-    add();
+    update();
   };
 
   useEffect(() => {
     async function fetchData() {
       setLoadingPage(true);
+      var cat = route.params?.category || {};
+      setEditCat(cat);
       await fetchCategory();
-      setSelectedColor(color[0].colorCode);
-      setSelectedIcon({ id: -1, imgSrc: "https://imgur.com/LHXHUAb.png" });
+      setName((prevState) => ({
+        ...prevState,
+        value: cat.name,
+      }));
+      setSelectedColor(cat.color);
+      setSelectedIcon({ id: cat.categoryId, imgSrc: cat.imgSrc });
       setLoadingPage(false);
     }
 
@@ -257,7 +270,6 @@ const AddCategory = ({ navigation, route }) => {
       setSelectedIcon(route.params?.icon);
       return;
     }
-    setSelectedIcon({ id: -1, imgSrc: "https://imgur.com/LHXHUAb.png" });
   }, [route.params]);
 
   const fetchCategory = async () => {
@@ -294,13 +306,13 @@ const AddCategory = ({ navigation, route }) => {
     }
   };
 
-  const fetchAddCategory = async () => {
+  const fetchUpdateCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/customcategories/add`;
+    const url = `${API_URL}/customcategories/update?id=${editCat.id}`;
 
     try {
       const response = await fetch(url, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -308,8 +320,7 @@ const AddCategory = ({ navigation, route }) => {
         body: JSON.stringify({
           categoryID: selectedIcon.id,
           categoryName: name.value,
-          categoryColor: selectedColor,
-          type: type,
+          categoryColor: selectedColor
         }),
       });
 
@@ -327,7 +338,7 @@ const AddCategory = ({ navigation, route }) => {
         return;
       }
 
-      alert("Thành công", "Thêm danh mục thành công.", () =>
+      alert("Thành công", "Sửa thông tin danh mục thành công.", () =>
         navigation.goBack()
       );
     } catch (error) {
@@ -379,20 +390,23 @@ const AddCategory = ({ navigation, route }) => {
             value={checked}
           >
             <View style={{ ...styles.fdRow, marginTop: 20 }}>
-              <TouchableOpacity
-                style={styles.fdRow}
-                onPress={() => setChecked("CHI")}
-              >
-                <RadioButton value="CHI"></RadioButton>
-                <Text style={{ fontSize: 16 }}>Chi phí</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ ...styles.fdRow, marginLeft: 30 }}
-                onPress={() => setChecked("THU")}
-              >
-                <RadioButton value="THU"></RadioButton>
-                <Text style={{ fontSize: 16 }}>Thu nhập</Text>
-              </TouchableOpacity>
+              {type == "CHI" ? (
+                <TouchableOpacity
+                  style={styles.fdRow}
+                  onPress={() => setChecked("CHI")}
+                >
+                  <RadioButton value="CHI"></RadioButton>
+                  <Text style={{ fontSize: 16 }}>Chi phí</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.fdRow}
+                  onPress={() => setChecked("THU")}
+                >
+                  <RadioButton value="THU"></RadioButton>
+                  <Text style={{ fontSize: 16 }}>Thu nhập</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </RadioButton.Group>
           <View style={styles.sectionContainer}>
@@ -427,9 +441,9 @@ const AddCategory = ({ navigation, route }) => {
           >
             <TouchableOpacity
               style={styles.btnAdd}
-              onPress={() => handleAddCategory()}
+              onPress={() => handleUpdateCategory()}
             >
-              <Text style={{ fontSize: 16 }}>Thêm</Text>
+              <Text style={{ fontSize: 16 }}>Cập nhật</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -438,7 +452,7 @@ const AddCategory = ({ navigation, route }) => {
   );
 };
 
-export default AddCategory;
+export default EditCategory;
 
 const styles = StyleSheet.create({
   container: {

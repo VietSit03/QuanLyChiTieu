@@ -2,7 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { ThemeContext } from "../Theme";
@@ -86,6 +86,7 @@ function CustomDrawer(props) {
                 color: themeColors.primaryColorText,
                 textDecorationLine: "underline",
               }}
+              onPress={() => props.navigation.navigate("UserProfile")}
             >
               Sửa hồ sơ
             </Text>
@@ -110,7 +111,7 @@ function CustomDrawer(props) {
             Trang chủ
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.item}
           onPress={() => props.navigation.navigate("Chart")}
         >
@@ -126,7 +127,7 @@ function CustomDrawer(props) {
           >
             Biểu đồ
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity
           style={styles.item}
           onPress={() => props.navigation.navigate("Category")}

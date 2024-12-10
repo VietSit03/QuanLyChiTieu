@@ -22,6 +22,41 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
             _context = context;
         }
 
+        [HttpGet("get")]
+        public async Task<ActionResult> GetById([FromQuery] int id)
+        {
+            var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(userID, out var uid))
+            {
+                var category = await _context.UserCategoryCustoms.Where(ucc => ucc.UserId == uid && ucc.Id == id)
+                .Join(_context.CategoryDefines,
+                    ucc => ucc.CategoryId,
+                    cd => cd.Id,
+                    (ucc, cd) => new { ucc, cd })
+                .Select(x => new CustomCategoryDTOResponse
+                {
+                    Id = x.ucc.Id,
+                    CategoryId = x.ucc.CategoryId.Value,
+                    ImgSrc = x.cd.ImgSrc,
+                    Name = x.ucc.CategoryName,
+                    Color = x.ucc.CategoryColor,
+                    IsDefault = x.ucc.IsDefault,
+                })
+                .FirstOrDefaultAsync();
+
+                if (category == null)
+                {
+                    return BadRequest(new Response { ErrorCode = ErrorCode.GETDATAFAIL });
+                }
+                else
+                {
+                    return Ok(new { ErrorCode = ErrorCode.GETDATASUCCESS, Data = category });
+                }
+
+            }
+
+            return BadRequest(new Response { ErrorCode = ErrorCode.ERROR });
+        }
 
         [HttpGet("top")]
         public async Task<ActionResult> GetTopCategoryCustom([FromQuery] string type, [FromQuery] int num)
@@ -90,8 +125,7 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
             if (Guid.TryParse(userID, out Guid userId))
             {
                 var categoryOrder = await _context.UserCategoryCustoms
-                    .Where(x => x.Type.Equals(request.Type) &&
-                            ((bool)x.IsDefault || x.UserId.Equals(userId)))
+                    .Where(x => x.Type.Equals(request.Type) && x.UserId.Equals(userId))
                     .MaxAsync(x => x.CategoryOrder);
 
                 var newCategory = new Models.UserCategoryCustom
@@ -114,6 +148,34 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
             return BadRequest(new Response { ErrorCode = ErrorCode.CREATEDATAFAIL });
         }
 
+        [HttpPut("update")]
+        public async Task<ActionResult> Update([FromQuery] int id, [FromBody] UCCRequest request)
+        {
+            var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (Guid.TryParse(userID, out Guid userId))
+            {
+                var category = await _context.UserCategoryCustoms
+                    .Where(x => x.Id == id)
+                    .FirstOrDefaultAsync();
+
+                if (category == null)
+                {
+                    return NotFound();
+                }
+
+                category.CategoryId = request.CategoryID;
+                category.CategoryName = request.CategoryName;
+                category.CategoryColor = request.CategoryColor;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new Response { ErrorCode = ErrorCode.UPDATEDATASUCCESS });
+            }
+
+            return BadRequest(new Response { ErrorCode = ErrorCode.UPDATEDATAFAIL });
+        }
+
         [HttpPost("changeorder")]
         public async Task<ActionResult> ChangeOrder([FromBody] ChangeOrderUCCRequest request)
         {
@@ -123,7 +185,7 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
             {
                 var categories = request.Categories;
 
-                foreach(var item in categories)
+                foreach (var item in categories)
                 {
                     var category = await _context.UserCategoryCustoms.Where(ucc => ucc.Id == item.Id && !ucc.IsDefault.Value).FirstOrDefaultAsync();
 
@@ -159,6 +221,19 @@ namespace QLCTAPI.Controllers.UserCategoryCustom
 
                     if (category.UserId == userId)
                     {
+                        var transactions = await _context.Transactions
+                            .Where(t => t.CategoryCustomId == category.Id)
+                            .ToListAsync();
+
+                        var categoryDefault = await _context.UserCategoryCustoms
+                            .Where(ucc => (bool)ucc.IsDefault && ucc.Type == category.Type)
+                            .FirstOrDefaultAsync();
+
+                        foreach (var transaction in transactions)
+                        {
+                            transaction.CategoryCustomId = categoryDefault.Id;
+                        }
+
                         _context.UserCategoryCustoms.Remove(category);
 
                         await _context.SaveChangesAsync();

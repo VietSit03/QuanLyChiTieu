@@ -23,6 +23,8 @@ import TransactionDetail from "../screens/Transaction/TransactionDetail";
 import EditSchedule from "../screens/Schedule/EditSchedule";
 import SearchTransaction from "../screens/Transaction/SearchTransaction";
 import Chart from "../screens/Chart/Chart";
+import EditCategory from "../screens/Category/EditCategory";
+import UserProfile from "../screens/Profile/UserProfile";
 
 const Stack = createStackNavigator();
 
@@ -76,6 +78,11 @@ function StackNavigator({ navigation }) {
         name="AddCategory"
         component={AddCategory}
         options={{ title: "Tạo danh mục" }}
+      />
+      <Stack.Screen
+        name="EditCategory"
+        component={EditCategory}
+        options={{ title: "Sửa thông tin danh mục" }}
       />
       <Stack.Screen
         name="IconCategory"
@@ -156,6 +163,11 @@ function StackNavigator({ navigation }) {
         name="Chart"
         component={Chart}
         options={drawer("Biểu đồ")}
+      />
+      <Stack.Screen
+        name="UserProfile"
+        component={UserProfile}
+        options={drawer("Hồ sơ")}
       />
     </Stack.Navigator>
   );

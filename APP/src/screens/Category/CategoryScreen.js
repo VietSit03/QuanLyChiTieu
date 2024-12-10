@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Modal,
@@ -165,9 +166,26 @@ const CategoryScreen = ({
       await fetchCategory();
     }
 
-    setModalVisible(false);
-    delCategory();
-    setLoadingAction(false);
+    Alert.alert(
+      "Xác nhận xoá danh mục",
+      `Khi xoá danh mục, các giao dịch hiện có sẽ chuyển thành danh mục Khác.`,
+      [
+        {
+          text: "Huỷ",
+          style: "cancel",
+        },
+        {
+          text: "Tiếp tục",
+          onPress: () => {
+            setModalVisible(false);
+            delCategory();
+            setLoadingAction(false);
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const Category = ({ item, drag }) => {
@@ -212,6 +230,12 @@ const CategoryScreen = ({
               }}
               onLongPress={
                 isDragEnabled ? drag : (event) => handleLongPress(item, event)
+              }
+              onPress={() =>
+                navigation.navigate("EditCategory", {
+                  category: item,
+                  type: type,
+                })
               }
             >
               <Image

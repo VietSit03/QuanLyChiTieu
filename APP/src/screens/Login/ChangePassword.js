@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { API_URL } from "@env";
 import { TextInput } from "react-native-paper";
-import { Image } from "react-native";
 import { encrypt } from "../../common";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { passwordRegex } from "../../regex";
@@ -76,12 +75,6 @@ const ChangePassword = ({ navigation }) => {
     } catch (error) {
       console.error("Error:", error);
     }
-  };
-
-  const checkError = () => {
-    var error = password.error != "" || confirmPassword.error != "";
-
-    console.log("Check" + password.error);
   };
 
   const checkEmptyAll = () => {

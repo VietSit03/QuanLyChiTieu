@@ -284,8 +284,8 @@ namespace QLCTAPI.Controllers.Transaction
                         });
 
                     var group = (await Task.WhenAll(tasks))
-                        .OrderByDescending(x => x.Money)
-                        .ThenByDescending(x => x.CreateAt)
+                        .OrderByDescending(x => x.CreateAt)
+                        .ThenByDescending(x => x.Money)
                         .ToList();
 
                     var list = group.Join(_context.UserCategoryCustoms,

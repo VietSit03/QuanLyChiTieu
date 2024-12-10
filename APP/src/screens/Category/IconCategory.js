@@ -83,7 +83,7 @@ const Icon = React.memo(
 const IconCategory = ({ navigation, route }) => {
   const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
-  const { type } = route.params;
+  const { type, page } = route.params;
 
   useEffect(() => {
     async function fetchData() {
@@ -213,12 +213,17 @@ const IconCategory = ({ navigation, route }) => {
                   : styles.btnSelectInactive
               }
               disabled={selectedCategory.id == -1}
-              onPress={() =>
-                navigation.navigate("AddCategory", {
-                  icon: selectedCategory,
-                  type: type,
-                })
-              }
+              onPress={() => {
+                page == "ADD"
+                  ? navigation.navigate("AddCategory", {
+                      icon: selectedCategory,
+                      type: type,
+                    })
+                  : navigation.navigate("EditCategory", {
+                      icon: selectedCategory,
+                      type: type,
+                    });
+              }}
             >
               <Text>Chọn</Text>
             </TouchableOpacity>

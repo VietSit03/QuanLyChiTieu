@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using QLCTAPI.Controllers.Category;
 using QLCTAPI.DTOs;
 using QLCTAPI.Models;
+using Quartz;
 using System.Security.Claims;
 
 namespace QLCTAPI.Controllers.Schedule
@@ -241,6 +242,97 @@ namespace QLCTAPI.Controllers.Schedule
             {
                 return BadRequest(new { ErrorCode = ErrorCode.UPDATEDATAFAIL });
             }
+        }
+
+        [HttpGet("refresh")]
+        public async Task<ActionResult> RefreshSchedule()
+        {
+            var notificationsA = await _context.Notifications.Where(x => x.Status == "A").ToListAsync();
+            if (notificationsA.Any())
+            {
+                foreach (var notification in notificationsA)
+                {
+                    if (notification.DateNotificate <= DateTime.Now)
+                    {
+                        notification.Status = "S";
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS });
+        }
+
+        [HttpPost("refresh-notifications")]
+        [CustomAuthorize]
+        public async Task<ActionResult> RefreshNotifications()
+        {
+            var useID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (Guid.TryParse(useID, out var uId))
+            {
+                var notificationsA = await _context.Notifications
+                    .Where(x => x.Status == "S" && x.UserId == uId)
+                    .GroupBy(x => new { x.UserId, x.ScheduleId })
+                    .Select(g => g.OrderByDescending(x => x.DateNotificate).FirstOrDefault())
+                    .ToListAsync();
+
+                var noti = notificationsA
+                    .Join(_context.Schedules,
+                        notification => notification.ScheduleId,
+                        schedule => schedule.Id,
+                        (notification, schedule) => new { notification, schedule })
+                    .Select(x => new
+                    {
+                        NotificationId = x.notification.Id,
+                        ScheduleId = x.notification.ScheduleId,
+                        FrequencyId = x.schedule.FrequencyId,
+                        Name = x.schedule.Name,
+                        EndDate = x.schedule.EndDate,
+                        IsActive = x.schedule.IsActive,
+                        DateNotificate = x.notification.DateNotificate,
+                    })
+                    .ToList();
+
+                var data = new List<dynamic>();
+
+                if (noti.Any())
+                {
+                    foreach (var notification in noti)
+                    {
+                        var no = notificationsA
+                            .Where(x => x.Id == notification.NotificationId)
+                            .FirstOrDefault();
+
+                        var dateNotification = await new Common().GetDateNotification((DateTime)notification.DateNotificate, notification.FrequencyId);
+                        if (dateNotification <= notification.EndDate.Value.ToDateTime(TimeOnly.MinValue))
+                        {
+                            Notification newNoti = new Notification
+                            {
+                                UserId = uId,
+                                ScheduleId = notification.ScheduleId.Value,
+                                DateNotificate = dateNotification,
+                                Status = "A"
+                            };
+
+                            await _context.Notifications.AddAsync(newNoti);
+                            data.Add(new
+                            {
+                                ScheduleId = newNoti.ScheduleId,
+                                DateNotificate = dateNotification,
+                                Name = notification.Name,
+                            });
+                        }
+                        else
+                        {
+                            no.Status = "I";
+                        }
+                    }
+                    await _context.SaveChangesAsync();
+                    return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS, Data = data });
+                }
+            }
+            return BadRequest(new { ErrorCode = ErrorCode.TOKENINVALID });
         }
 
         [HttpPut("toggleactive")]

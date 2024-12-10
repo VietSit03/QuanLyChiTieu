@@ -92,6 +92,7 @@ const Login = ({ navigation }) => {
 
       await AsyncStorage.setItem("token", apiResponse.token);
       await AsyncStorage.setItem("email", apiResponse.data.email);
+      await AsyncStorage.setItem("name", apiResponse.data.name);
       await AsyncStorage.setItem(
         "balance",
         apiResponse.data.balance.toString()
@@ -108,6 +109,7 @@ const Login = ({ navigation }) => {
 
       navigation.replace("DrawerNavigator");
     } catch (error) {
+      setLogging(false);
       console.error("Error:", error);
     }
   };
