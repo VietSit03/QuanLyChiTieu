@@ -154,6 +154,7 @@ namespace QLCTAPI.Controllers.Login
                 Email = request.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Name = request.Name,
+                CurrencyCode = "VND"
             };
 
             await _context.Users.AddAsync(newUser);

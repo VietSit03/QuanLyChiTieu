@@ -81,7 +81,7 @@ const Icon = React.memo(
                 alignItems: "center",
               }}
               onPress={() =>
-                navigation.navigate("IconCategory", { type: type })
+                navigation.navigate("IconCategory", { type: type, page: "ADD" })
               }
             >
               <Ionicons name="add-outline" size={40} color="white" />
@@ -296,7 +296,7 @@ const AddCategory = ({ navigation, route }) => {
 
   const fetchAddCategory = async () => {
     const token = await AsyncStorage.getItem("token");
-    const url = `${API_URL}/customcategories/Add`;
+    const url = `${API_URL}/customcategories/add`;
 
     try {
       const response = await fetch(url, {

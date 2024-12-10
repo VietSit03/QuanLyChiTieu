@@ -254,3 +254,6 @@ D:\Doan\QuanLyChiTieu\API\QLCTAPI\QLCTAPI\bin\Debug\net8.0\runtimes\win\lib\net7
 D:\Doan\QuanLyChiTieu\API\QLCTAPI\QLCTAPI\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Security.Cryptography.ProtectedData.dll
 D:\Doan\QuanLyChiTieu\API\QLCTAPI\QLCTAPI\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Windows.Extensions.dll
 D:\Doan\QuanLyChiTieu\API\QLCTAPI\QLCTAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Doan\QuanLyChiTieu\API\QLCTAPI\QLCTAPI\bin\Debug\net8.0\Quartz.dll
+D:\Doan\QuanLyChiTieu\API\QLCTAPI\QLCTAPI\bin\Debug\net8.0\Quartz.Extensions.DependencyInjection.dll
+D:\Doan\QuanLyChiTieu\API\QLCTAPI\QLCTAPI\bin\Debug\net8.0\Quartz.Extensions.Hosting.dll

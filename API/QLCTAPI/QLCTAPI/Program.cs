@@ -1,8 +1,11 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using QLCTAPI.Models;
 using System.Text;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Spi;
 using QLCTAPI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,9 +29,7 @@ builder.Services.AddCors(options =>
 });
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -60,6 +61,26 @@ builder.Services.AddAuthentication(options =>
 // Register HttpClient
 builder.Services.AddHttpClient();
 
+// Configure Quartz.NET
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+
+    // Define a job and trigger
+    var jobKey = new JobKey("APICallJob");
+    q.AddJob<APICallJob>(opts => opts.WithIdentity(jobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("APICallJob-trigger")
+        .WithSimpleSchedule(x => x
+            .WithIntervalInMinutes(30)
+            .RepeatForever()));
+});
+
+// Add Quartz.NET hosted service
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -70,7 +91,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
 
 // Enable authentication

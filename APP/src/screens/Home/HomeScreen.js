@@ -1,4 +1,5 @@
 import {
+  Dimensions,
   FlatList,
   Image,
   Pressable,
@@ -16,6 +17,10 @@ import { API_URL } from "@env";
 import { LoadingPage } from "../../component/Loading";
 import { formatMoney } from "../../common";
 import { useFocusEffect } from "@react-navigation/native";
+import { VictoryPie } from "victory-native";
+import { Svg, Text as SvgText } from "react-native-svg";
+
+const screenWidth = Dimensions.get("window").width;
 
 const TransSummary = React.memo(
   ({ item, totalAmount, symbol, navigation, type }) => {
@@ -80,6 +85,7 @@ const HomeScreen = ({ route, navigation }) => {
   const [loadingPage, setLoadingPage] = useState(true);
   const [data, setData] = useState(null);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [lblChart, setlblChart] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -93,6 +99,10 @@ const HomeScreen = ({ route, navigation }) => {
       fetchData();
     }, [])
   );
+
+  useEffect(() => {
+    setlblChart(`${formatMoney(totalAmount)} ${symbol}`);
+  }, [totalAmount, symbol]);
 
   const renderTransSummary = ({ item, index }) => {
     return (
@@ -142,10 +152,20 @@ const HomeScreen = ({ route, navigation }) => {
       setTotalAmount(totalBudget);
 
       setData(apiResponse.data);
+
+      setPieData(
+        apiResponse.data.map((item) => ({
+          x: item.categoryName,
+          y: item.budget,
+          color: item.color,
+        }))
+      );
     } catch (error) {
       console.error("Error:", error);
     }
   };
+
+  const [pieData, setPieData] = useState([]);
 
   return (
     <>
@@ -153,7 +173,44 @@ const HomeScreen = ({ route, navigation }) => {
         <LoadingPage />
       ) : (
         <View style={styles.container}>
-          <ScrollView contentContainerStyle={styles.sc}>
+          <ScrollView
+            contentContainerStyle={styles.sc}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={{ marginTop: 10 }}>
+              <Svg width={screenWidth} height={270}>
+                <VictoryPie
+                  standalone={false}
+                  height={270}
+                  cornerRadius={5}
+                  data={pieData}
+                  padAngle={1}
+                  colorScale={pieData.map((item) => item.color)}
+                  radius={120}
+                  innerRadius={80}
+                  style={{
+                    data: {
+                      stroke: "#F0F0F0",
+                    },
+                    labels: {
+                      fill: "black",
+                      fontSize: 14,
+                      fontWeight: "bold",
+                    },
+                  }}
+                  labels={() => null}
+                />
+                <SvgText
+                  x={screenWidth / 2}
+                  y={150}
+                  textAnchor="middle" 
+                  fontSize="25"
+                  fontWeight="bold" 
+                >
+                  {lblChart}
+                </SvgText>
+              </Svg>
+            </View>
             <View style={{ width: "100%", marginTop: 10 }}>
               <Pressable
                 style={styles.transSummary}
@@ -226,19 +283,17 @@ const HomeScreen = ({ route, navigation }) => {
             </View>
             <View style={{ height: 100 }}></View>
           </ScrollView>
-          {type != "TONG" && (
-            <TouchableOpacity
-              style={{
-                ...styles.btnAddTrans,
-                backgroundColor: themeColors.primaryColorLighter,
-              }}
-              onPress={() =>
-                navigation.navigate("AddTransaction", { type: type })
-              }
-            >
-              <Ionicons name="add-outline" size={40} color="white" />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={{
+              ...styles.btnAddTrans,
+              backgroundColor: themeColors.primaryColorLighter,
+            }}
+            onPress={() =>
+              navigation.navigate("AddTransaction", { type: type })
+            }
+          >
+            <Ionicons name="add-outline" size={40} color="white" />
+          </TouchableOpacity>
         </View>
       )}
     </>

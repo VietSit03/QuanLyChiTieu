@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using QLCTAPI.Controllers.Currency;
 using QLCTAPI.Controllers.User;
 using QLCTAPI.DTOs;
@@ -283,8 +284,8 @@ namespace QLCTAPI.Controllers.Transaction
                         });
 
                     var group = (await Task.WhenAll(tasks))
-                        .OrderByDescending(x => x.Money)
-                        .ThenByDescending(x => x.CreateAt)
+                        .OrderByDescending(x => x.CreateAt)
+                        .ThenByDescending(x => x.Money)
                         .ToList();
 
                     var list = group.Join(_context.UserCategoryCustoms,
@@ -478,6 +479,83 @@ namespace QLCTAPI.Controllers.Transaction
             }
 
             return BadRequest(new { ErrorCode = ErrorCode.DELETEDATAFAIL });
+        }
+
+        [HttpPost("search")]
+        public async Task<ActionResult> SearchTransaction([FromBody] SearchTransRequest request)
+        {
+            var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (Guid.TryParse(userID, out var id))
+            {
+                // Lọc theo loại giao dịch
+                var listTrans = await _context.Transactions
+                .Where(t => t.UserId == id && t.Status == "S" && (t.Type == request.Type || request.Type == "ALL"))
+                .ToListAsync();
+
+                if (listTrans.Count > 0)
+                {
+                    DateTime? fromDate = string.IsNullOrEmpty(request.FromDate)
+                        ? (DateTime?)null
+                        : DateTime.TryParseExact(request.FromDate, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var fromParsedDate)
+                            ? fromParsedDate
+                            : (DateTime?)null;
+
+                    DateTime? toDate = string.IsNullOrEmpty(request.ToDate)
+                        ? (DateTime?)null
+                        : DateTime.TryParseExact(request.ToDate, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var toParsedDate)
+                            ? toParsedDate
+                            : (DateTime?)null;
+
+                    listTrans = listTrans
+                        .Where(lt =>
+                            (fromDate == null && toDate == null) ||
+                            (fromDate == null && lt.CreateAt.HasValue && lt.CreateAt.Value <= toDate) ||
+                            (toDate == null && lt.CreateAt.HasValue && lt.CreateAt.Value >= fromDate) ||
+                            (lt.CreateAt.HasValue && fromDate <= lt.CreateAt.Value && lt.CreateAt.Value <= toDate)
+                        )
+                        .ToList();
+
+                    var listFilted = listTrans.Join(_context.UserCategoryCustoms,
+                        lt => (int)lt.CategoryCustomId,
+                        ucc => ucc.Id,
+                        (lt, ucc) => new { lt, ucc })
+                        .Where(x => request.Key.IsNullOrEmpty() || x.ucc.CategoryName.Contains(request.Key) || x.lt.Money.Value.ToString().Contains(request.Key))
+                        .Select(x => new
+                        {
+                            Id = x.lt.Id,
+                            Money = x.lt.Money,
+                            CreateAt = x.lt.CreateAt,
+                            CategoryId = x.ucc.CategoryId,
+                            CategoryName = x.ucc.CategoryName,
+                            CategoryColor = x.ucc.CategoryColor,
+                        })
+                        .ToList();
+
+                    var data = listFilted.Join(_context.CategoryDefines,
+                        lf => (int)lf.CategoryId,
+                        cd => cd.Id,
+                        (lf, cd) => new { lf, cd })
+                        .Select(x => new
+                        {
+                            Id = x.lf.Id,
+                            Money = x.lf.Money,
+                            CreateAt = x.lf.CreateAt,
+                            CategoryName = x.lf.CategoryName,
+                            CategoryColor = x.lf.CategoryColor,
+                            ImgSrc = x.cd.ImgSrc,
+                        })
+                        .ToList();
+
+                    return Ok(new { ErrorCode = ErrorCode.GETDATASUCCESS, Data = data });
+                }
+                else
+                {
+                    return BadRequest(new { ErrorCode = ErrorCode.NODATA });
+                }
+            }
+
+            return BadRequest(new { ErrorCode = ErrorCode.GETDATAFAIL });
         }
     }
 }

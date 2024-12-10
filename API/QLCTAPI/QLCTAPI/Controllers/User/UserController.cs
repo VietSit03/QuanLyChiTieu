@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using QLCTAPI.DTOs;
 using QLCTAPI.Models;
 using System.Security.Claims;
 
@@ -54,6 +55,25 @@ namespace QLCTAPI.Controllers.User
             await _context.SaveChangesAsync();
 
             return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS, Message = "Kích hoạt tài khoản thành công, quay lại ứng dụng để tiếp tục" });
+        }
+
+        [HttpPut("update")]
+        public async Task<ActionResult> UpdateProfile([FromBody] UserDTO request)
+        {
+            var userID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(userID, out var id))
+            {
+                var user = await _context.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+
+                user.Name = request.Name;
+
+                await _context.SaveChangesAsync();
+
+                var data = user;
+
+                return Ok(new { ErrorCode = ErrorCode.UPDATEDATASUCCESS, Data = data });
+            }
+            return BadRequest(new { ErrorCode = ErrorCode.UPDATEDATAFAIL });
         }
 
         [HttpPut("changecurrency")]

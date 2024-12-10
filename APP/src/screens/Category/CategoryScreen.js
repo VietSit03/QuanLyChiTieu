@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Modal,
@@ -18,35 +19,30 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useFocusEffect } from "@react-navigation/native";
 import { alert } from "../../common";
+import Feather from "@expo/vector-icons/Feather";
 
 const CategoryScreen = ({
   type,
   isDragEnabled,
   setIsDragEnabled,
+  dragCategory,
+  setDragCategory,
+  category,
+  setCategory,
   navigation,
 }) => {
   const [loadingPage, setLoadingPage] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
   const { themeColors } = useContext(ThemeContext);
-  const [category, setCategory] = useState();
 
   const chunkArray = (arr, chunkSize) => {
-    const result = [];
-    for (let i = 0; i < arr.length; i += chunkSize) {
-      result.push(arr.slice(i, i + chunkSize));
-    }
-
+    const result = [...arr];
     const specialCategory = { id: "special", isSpecial: true };
 
-    if (result[result.length - 1].length < chunkSize) {
-      result[result.length - 1].push(specialCategory);
-    } else {
-      result.push([specialCategory]);
-    }
+    result.push(specialCategory);
 
-    const lastRow = result[result.length - 1];
-    while (lastRow.length < chunkSize) {
-      lastRow.push({ id: `empty-${lastRow.length}`, empty: true });
+    while (result.length % chunkSize != 0) {
+      result.push({ id: `empty-${result.length}`, empty: true });
     }
 
     return result;
@@ -80,7 +76,8 @@ const CategoryScreen = ({
 
       var apiResponse = await response.json();
 
-      setCategory(apiResponse.data);
+      setDragCategory(apiResponse.data);
+      setCategory(chunkArray(apiResponse.data, 3));
     } catch (error) {
       console.error("Error:", error);
     }
@@ -88,6 +85,7 @@ const CategoryScreen = ({
 
   useFocusEffect(
     useCallback(() => {
+      setLoadingPage(true);
       let isActive = true;
       async function fetchData() {
         if (isActive) {
@@ -168,9 +166,26 @@ const CategoryScreen = ({
       await fetchCategory();
     }
 
-    setModalVisible(false);
-    delCategory();
-    setLoadingAction(false);
+    Alert.alert(
+      "Xác nhận xoá danh mục",
+      `Khi xoá danh mục, các giao dịch hiện có sẽ chuyển thành danh mục Khác.`,
+      [
+        {
+          text: "Huỷ",
+          style: "cancel",
+        },
+        {
+          text: "Tiếp tục",
+          onPress: () => {
+            setModalVisible(false);
+            delCategory();
+            setLoadingAction(false);
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const Category = ({ item, drag }) => {
@@ -216,6 +231,12 @@ const CategoryScreen = ({
               onLongPress={
                 isDragEnabled ? drag : (event) => handleLongPress(item, event)
               }
+              onPress={() =>
+                navigation.navigate("EditCategory", {
+                  category: item,
+                  type: type,
+                })
+              }
             >
               <Image
                 source={{ uri: item.imgSrc }}
@@ -235,22 +256,45 @@ const CategoryScreen = ({
     );
   };
 
-  const renderRow = ({ item, drag }) => {
+  const CategoryDrag = ({ item, drag }) => {
+    if (item.isDefault) {
+      return null;
+    }
+
     return (
-      <View
-        style={{
-          flexDirection: "row",
-          marginBottom: 15,
-          justifyContent: "space-around",
-        }}
-      >
-        {item.map((category, index) => {
-          return (
-            <Category key={index.toString()} item={category} drag={drag} />
-          );
-        })}
+      <View style={[styles.categoryDrag]}>
+        <View style={styles.dragItemContainer}>
+          <Pressable
+            style={[styles.pressable, { backgroundColor: item.color }]}
+          >
+            <Image source={{ uri: item.imgSrc }} style={styles.image} />
+          </Pressable>
+          <Text style={styles.itemName} numberOfLines={2} ellipsizeMode="tail">
+            {item.name}
+          </Text>
+        </View>
+        <Pressable
+          style={styles.dragBtn}
+          onLongPress={() => {
+            drag();
+          }}
+        >
+          <Feather name="menu" size={24} color="black" />
+        </Pressable>
       </View>
     );
+  };
+
+  const renderRow = ({ item, drag }) => {
+    return (
+      <View style={{ flex: 1, marginBottom: 15, alignItems: "center" }}>
+        <Category item={item} drag={drag} />
+      </View>
+    );
+  };
+
+  const renderRowDrag = ({ item, drag }) => {
+    return <CategoryDrag item={item} drag={drag} />;
   };
 
   return (
@@ -258,27 +302,25 @@ const CategoryScreen = ({
       {loadingPage ? (
         <LoadingPage />
       ) : (
-        <View style={{ flex: 1, padding: 20 }}>
+        <View style={{ flex: 1, paddingHorizontal: 10, paddingVertical: 20 }}>
           {loadingAction && <LoadingAction />}
           {isDragEnabled ? (
             <DraggableFlatList
-              data={chunkArray(category, 4)}
+              data={dragCategory}
               keyExtractor={(item, index) => index.toString()}
-              renderItem={renderRow}
+              renderItem={renderRowDrag}
               scrollEnabled={true}
               onDragEnd={({ data }) => {
-                setCategory(data);
-              }}
-              onTouchStart={(data) => {
-                console.log(data);
+                setDragCategory(data);
               }}
             />
           ) : (
             <FlatList
-              data={chunkArray(category, 3)}
+              data={category}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderRow}
               scrollEnabled={true}
+              numColumns={3}
             />
           )}
 
@@ -341,5 +383,47 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     padding: 10,
+  },
+  categoryDrag: {
+    padding: 10,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 10,
+    elevation: 2,
+    margin: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  dragItemContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  pressable: {
+    height: 50,
+    width: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  image: {
+    width: 30,
+    height: 30,
+    resizeMode: "contain",
+  },
+  itemName: {
+    marginLeft: 15,
+    fontSize: 18,
+    color: "#333",
+    fontWeight: "500",
+  },
+  dragBtn: {
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectedItem: {
+    borderColor: "blue",
+    borderWidth: 2,
   },
 });

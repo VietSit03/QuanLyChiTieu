@@ -12,6 +12,9 @@ import { ThemeContext } from "../../Theme";
 import { DrawerNavigator } from "../../component/Button";
 import Feather from "@expo/vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { alert } from "../../common";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@env";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -19,6 +22,8 @@ const Category = ({ navigation, route }) => {
   const { themeColors } = useContext(ThemeContext);
   const [loadingPage, setLoadingPage] = useState(true);
   const [isDragEnabled, setIsDragEnabled] = useState(false);
+  const [category, setCategory] = useState(null);
+  const [dragCategory, setDragCategory] = useState(null);
 
   useEffect(() => {
     async function fetchPrimaryColor() {
@@ -28,8 +33,66 @@ const Category = ({ navigation, route }) => {
     fetchPrimaryColor();
   }, []);
 
-  const handleRightBtn = () => {
+  const handleLeftBtn = async () => {
     setIsDragEnabled(!isDragEnabled);
+    setDragCategory(category.filter((item) => !item.isSpecial && !item.empty));
+  };
+
+  const handleRightBtn = async () => {
+    setIsDragEnabled(!isDragEnabled);
+    await fetchChangeOrder();
+  };
+
+  const chunkArray = (arr, chunkSize) => {
+    const result = [...arr];
+    const specialCategory = { id: "special", isSpecial: true };
+
+    result.push(specialCategory);
+
+    while (result.length % chunkSize != 0) {
+      result.push({ id: `empty-${result.length}`, empty: true });
+    }
+
+    return result;
+  };
+
+  const fetchChangeOrder = async () => {
+    const token = await AsyncStorage.getItem("token");
+    var url = `${API_URL}/customcategories/changeorder`;
+    const newCategory = dragCategory.map((item, index) => ({
+      id: item.id,
+      categoryOrder: index + 1,
+    }));
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          categories: newCategory,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert(
+            "Hết hạn đăng nhập",
+            "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục",
+            () => navigation.navigate("Login")
+          );
+          await AsyncStorage.setItem("token", "");
+        }
+        alert("Lỗi", "Xảy ra lỗi");
+        return false;
+      }
+
+      setCategory(chunkArray(dragCategory, 3));
+      return true;
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const Header = () => {
@@ -51,7 +114,7 @@ const Category = ({ navigation, route }) => {
           {isDragEnabled ? (
             <TouchableOpacity
               style={styles.btnLeft}
-              onPress={() => setIsDragEnabled(!isDragEnabled)}
+              onPress={() => handleLeftBtn()}
             >
               <Ionicons name="close" size={26} color="white" />
             </TouchableOpacity>
@@ -104,6 +167,10 @@ const Category = ({ navigation, route }) => {
                   type="CHI"
                   isDragEnabled={isDragEnabled}
                   setIsDragEnabled={setIsDragEnabled}
+                  dragCategory={dragCategory}
+                  setDragCategory={setDragCategory}
+                  category={category}
+                  setCategory={setCategory}
                   navigation={navigation}
                 />
               )}
@@ -115,6 +182,10 @@ const Category = ({ navigation, route }) => {
                   type="THU"
                   isDragEnabled={isDragEnabled}
                   setIsDragEnabled={setIsDragEnabled}
+                  dragCategory={dragCategory}
+                  setDragCategory={setDragCategory}
+                  category={category}
+                  setCategory={setCategory}
                   navigation={navigation}
                 />
               )}

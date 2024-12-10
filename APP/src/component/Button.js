@@ -14,11 +14,11 @@ export const DrawerNavigator = ({ navigation }) => {
   );
 };
 
-export const BackButton = ({ navigation }) => {
+export const BackButton = ({ navigation, size }) => {
   return (
     <Ionicons
       name="arrow-back-sharp"
-      size={26}
+      size={size ? size : 26}
       color="white"
       onPress={() => navigation.goBack()}
       style={{ marginLeft: 15 }}

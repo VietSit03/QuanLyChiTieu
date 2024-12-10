@@ -18,10 +18,21 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "FOREGROUND_SERVICE",
+        "BACKGROUND_LOCATION"
+      ],
+      "package": "com.vietsjt.QuanLyChiTieu"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8b54b3cb-70e6-4096-b7fd-0a09a70d56e8"
+      }
+    },
+    "owner": "vietsjt"
   }
 }
